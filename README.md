@@ -238,6 +238,7 @@ with commands:
   │ --processed-data-home  -p      TEXT  Processed data directory (overrides    │
   │                                      config)                                │
   │ --output-home          -o      TEXT  Output directory for score files       │
+  │ --verbose              -v            Verbose logging for collate            │
   │ --help                               Show this message and exit.            │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
@@ -271,6 +272,7 @@ with commands:
   │                                      default)                               │
   │ --processed-data-home  -p      TEXT  Processed data directory (overrides    │
   │                                      config)                                │
+  │ --verbose              -v            Verbose logging for collate            │
   │ --help                               Show this message and exit.            │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```

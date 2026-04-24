@@ -13,7 +13,6 @@ from rich import print
 from rich.console import Console
 
 from cotorra.extractor import Extractor
-from cotorra.scorer_generative import GenerativeScorer
 from cotorra.scorer_rep_based import RepBasedScorer
 from cotorra.trainer import Trainer
 from cotorra.tuner import Tuner
@@ -181,10 +180,17 @@ def generative_score(
         Optional[str],
         typer.Option("--output-home", "-o", help="Output directory for score files"),
     ] = None,
+    verbose: Annotated[
+        bool,
+        typer.Option(
+            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
+        ),
+    ] = False,
 ):
     """
     Generate SCORE/REACH metrics from a trained model and save them to parquet.
     """
+    from cotorra.scorer_generative import GenerativeScorer  # only loads if called
 
     with console.status("[bold green]Generative scoring on held-out data..."):
         t0 = time.perf_counter()
@@ -193,7 +199,7 @@ def generative_score(
             processed_data_home=processed_data_home,
             output_home=output_home,
         )
-        scorer.save_all()
+        scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Generative scoring completed in {t1 - t0:.2f}s.")
         out_path = (
@@ -219,6 +225,12 @@ def rep_based_score(
             help="Processed data directory (overrides config)",
         ),
     ] = None,
+    verbose: Annotated[
+        bool,
+        typer.Option(
+            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
+        ),
+    ] = False,
 ):
     """
     Generate rep-based scores for the token-based outcomes of interest.
@@ -229,7 +241,7 @@ def rep_based_score(
         scorer = RepBasedScorer(
             main_cfg=main_config, processed_data_home=processed_data_home
         )
-        scorer.save_all()
+        scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Rep-based scoring completed in {t1 - t0:.2f}s.")
         out_path = (

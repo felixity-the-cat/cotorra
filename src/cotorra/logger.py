@@ -12,6 +12,8 @@ import torch as t
 from rich.console import Console
 from rich.logging import RichHandler
 
+from cotorra.util import bootstrap_ci
+
 logging.basicConfig(
     level=logging.WARNING,
     format="%(message)s",
@@ -56,6 +58,31 @@ class Logger(logging.Logger):
                     i + 1, np.vectorize(reverse.get)(sample.cpu().numpy()).tolist()
                 )
             )
+
+    def summarize_preds(self, df_res, target_tokens):
+        cols = df_res.collect_schema().names()
+        for tt in target_tokens:
+            self.info(f"{tt=}")
+            for method in ("mc", "scope", "reach", "rep"):
+                if f"{tt}_{method}_score" in cols:
+                    self.info(f"{method=}")
+                    y_qual, y_true, y_score = (
+                        df_res.select(
+                            ~pl.col(f"{tt}_past"),
+                            f"{tt}_future",
+                            f"{tt}_{method}_score",
+                        )
+                        .collect()
+                        .to_numpy()
+                        .T
+                    )
+                    if (nf := np.sum(~np.isfinite(y_score[y_qual.astype(bool)]))) > 0:
+                        self.warning(f"{nf} non-finite {method} estimates for {tt}.")
+                    for k, v in bootstrap_ci(
+                        y_true[y_qual.astype(bool)],
+                        np.nan_to_num(y_score)[y_qual.astype(bool)],
+                    ).items():
+                        self.info("{k:<7}: {v}".format(k=k, v=v.round(3)))
 
 
 if __name__ == "__main__":

@@ -4,7 +4,6 @@
 load data and prepare for training / evaluation
 """
 
-import collections
 import pathlib
 
 import datasets as ds
@@ -12,14 +11,7 @@ import numpy as np
 import polars as pl
 from omegaconf import OmegaConf
 
-
-def batched_iter(dset: ds.Dataset, seq_len: int):
-    dq = {k: collections.deque() for k in dset.column_names}
-    for eg in iter(dset):
-        for k in dq:
-            dq[k].extend(list(eg[k]))
-        while len(dq[list(dq.keys())[0]]) >= seq_len:
-            yield {k: [dq[k].popleft() for _ in range(seq_len)] for k in dq}
+from cotorra.util import batched_iter
 
 
 class Loader:

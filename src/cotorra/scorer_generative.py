@@ -6,7 +6,6 @@ use @lukesolo-ml's implementation of SCORE and REACH to make generative predicti
 
 import asyncio
 import collections
-import itertools
 import pathlib
 
 import numpy as np
@@ -16,15 +15,7 @@ from omegaconf import OmegaConf
 from quick_sco_re import GenerationConfig, create_engine, generate_and_score
 
 from cotorra.logger import Logger
-
-
-def batched(iterable, n):
-    # `itertools.batched` introduced in Python 3.12
-    # cf. https://docs.python.org/3/library/itertools.html#itertools.batched
-    # batched('ABCDEFG', 3) → ABC DEF G
-    iterator = iter(iterable)
-    while batch := tuple(itertools.islice(iterator, n)):
-        yield batch
+from cotorra.util import batched
 
 
 class GenerativeScorer:
@@ -106,7 +97,7 @@ class GenerativeScorer:
             ):
                 idx, tks = zip(*idx_tks)
                 _, results = await self.sco_re(tt, tks)
-                res[f"{tt}_mc_estimate"][to_score][np.array(idx).ravel()] = np.array(
+                res[f"{tt}_mc_score"][to_score][np.array(idx).ravel()] = np.array(
                     [np.mean(r.m0_samples) for r in results]
                 )
                 res[f"{tt}_scope_score"][to_score][np.array(idx).ravel()] = np.array(
@@ -117,14 +108,17 @@ class GenerativeScorer:
                 )
         return res
 
-    def save_all(self):
+    def save_all(self, verbose: bool = False):
         res = asyncio.run(self.score())
-        self.ds.with_columns(pl.from_dict(res)).sink_parquet(
+        (df_res := self.ds.with_columns(pl.from_dict(res))).sink_parquet(
             self.processed_data_home / f"scores-generative-{self.cfg.run_name}.parquet"
         )
+
+        if verbose:
+            self.logger.summarize_preds(df_res, self.cfg.score.target_tokens)
 
 
 if __name__ == "__main__":
     self = GenerativeScorer()
-    self.save_all()
+    self.save_all(verbose=True)
     # breakpoint()

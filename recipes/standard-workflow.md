@@ -47,7 +47,8 @@ esac
    ```sh
    cotorra generative-score \
        --processed-data-home ../cocoa/processed/dev \
-       --output-home ./output/dev/
+       --output-home ./output/dev/ \
+       --verbose
    ```
 
 4. You can get representations of the initial parts of the sequences and
@@ -59,7 +60,8 @@ esac
        --output-home ./output/dev/
 
    cotorra rep-based-score \
-       --processed-data-home ../cocoa/processed/dev
+       --processed-data-home ../cocoa/processed/dev \
+       --verbose
    ```
 
 <!-- prettier-ignore-start -->
