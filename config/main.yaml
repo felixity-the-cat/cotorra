@@ -3,10 +3,32 @@
 processed_data_home: ../cocoa/processed # where processed data lives
 output_home: ./output # where you can find trained models
 
-model_config: ./config/model/llama-32-lite.yaml
+model_config: ./config/model/llama-32.yaml
 max_seq_len: !!int &max_len 4096
-n_epochs: !!int 2
-run_name: &run_name cotorra-t-rope
+n_epochs: !!int 3
+run_name: &run_name cotorra-tuning
+
+tokens_of_interest: &tois
+  - XFR-IN//icu
+  - RESP//imv
+  - DSCG//expired
+  - DSCG//hospice
+  - XFR-IN//icu
+  - RESP//imv
+  - DSCG//expired
+  - DSCG//hospice
+  - LAB-RES//sodium_Q0
+  - LAB-RES//sodium_Q9
+  - LAB-RES//potassium_Q0
+  - LAB-RES//potassium_Q9
+  - LAB-RES//hemoglobin_Q0
+  - LAB-RES//glucose_serum_Q0
+  - VTL//heart_rate_Q9
+  - SOFA//resp-4
+  - SOFA//renal-4
+  - SOFA//liver-4
+  - SOFA//cv-4
+  - ASMT//cam_total_positive
 
 wandb:
   project: cotorra
@@ -16,11 +38,7 @@ custom_loss: !!bool true
 quantile_token_loss:
   qt_weight: !!float 20.0
 label_weighted_loss:
-  tokens_of_interest:
-    - XFR-IN//icu
-    - RESP//imv
-    - DSCG//expired
-    - DSCG//hospice
+  tokens_of_interest: *tois
   toi_weight: !!float 20.0
 
 time_based_rope:
@@ -44,26 +62,22 @@ training_args:
   learning_rate: !!float 2e-4
   gradient_accumulation_steps: !!int 1
   remove_unused_columns: !!bool false # otherwise `s_elapsed` is automatically dropped
-  # max_steps: !!int 10 # uncomment for testing purposes only
   bf16: !!bool true
+  # max_steps: !!int 10 # uncomment for testing purposes only
 
 tuning_args:
   direction: minimize
   backend: optuna
-  n_trials: !!int 3
+  n_trials: !!int 10
 
 extract:
   max_len: *max_len
   batch_size: !!int 64
-  time_limit_s: !!int 86400 # 24 hours
 
 score:
   max_len: *max_len
-  n_samp: !!int 5 # MC samples per input per trajectory type
-  target_tokens: # token-based outcomes of interest
-    - XFR-IN//icu
-    - DSCG//expired
-    - RESP//imv
+  n_samp: !!int 10 # MC samples per input per trajectory type
+  target_tokens: *tois # token-based outcomes of interest
   end_tokens: # tokens that naturally terminate a sequence
     - EOS
   suppressed_tokens: [] # tokens to suppress (e.g. PAD) via logit bias

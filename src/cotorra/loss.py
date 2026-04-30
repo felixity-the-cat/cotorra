@@ -7,8 +7,8 @@ note this code only runs when configured with `custom_loss: !!bool true`
 
 import numpy as np
 import torch as t
-
 import wandb
+
 from cotorra.logger import Logger
 
 

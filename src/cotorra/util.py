@@ -17,7 +17,7 @@ from sklearn import metrics as skl_mets
 Generator: typing.TypeAlias = np.random._generator.Generator
 
 
-def batched(iterable, n):
+def batched(iterable, n) -> collections.abc.Iterator:
     """
     `itertools.batched` introduced in Python 3.12
     cf. https://docs.python.org/3/library/itertools.html#itertools.batched
@@ -28,7 +28,7 @@ def batched(iterable, n):
         yield batch
 
 
-def batched_iter(dset: ds.Dataset, seq_len: int):
+def batched_iter(dset: ds.Dataset, seq_len: int) -> collections.abc.Iterator:
     """
     batched iteration on a huggingface dataset;
     as opposed to `batched`, the remainder here is dropped
@@ -48,13 +48,13 @@ def bootstrap_ci(
     n_samples: int = 10_000,
     alpha: float = 0.05,
     rng: Generator = np.random.default_rng(seed=42),
-    metrics: typing.Tuple[typing.Literal["roc_auc", "pr_auc", "brier"], ...] = (
+    metrics: collections.abc.Sequence[typing.Literal["roc_auc", "pr_auc", "brier"]] = (
         "roc_auc",
         "pr_auc",
         "brier",
     ),
     n_jobs: int = -1,
-) -> dict:
+) -> dict[str, np.ndarray]:
     """
     Calculates a bootstrapped percentile interval for objectives `objs` as
     described in §13.3 of Efron & Tibshirani's "An Introduction to the Bootstrap"
