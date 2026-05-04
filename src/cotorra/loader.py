@@ -67,20 +67,24 @@ class Loader:
             )
         )
 
+        self.inference_files = {
+            s: str(f)
+            for s in self.splits
+            if (f := self.processed_data_home / f"{s}_for_inference.parquet").is_file()
+        }
+
         self.for_inference = (
-            ds.load_dataset(
-                "parquet",
-                data_files={
-                    s: str(self.processed_data_home / f"{s}_for_inference.parquet")
-                    for s in self.splits
-                },
+            (
+                ds.load_dataset("parquet", data_files=self.inference_files)
+                .rename_column("tokens_past", "input_ids")
+                .select_columns(
+                    ["input_ids"]
+                    if "time_based_rope" not in self.cfg
+                    else ["input_ids", "s_elapsed_past"]
+                )
             )
-            .rename_column("tokens_past", "input_ids")
-            .select_columns(
-                ["input_ids"]
-                if "time_based_rope" not in self.cfg
-                else ["input_ids", "s_elapsed_past"]
-            )
+            if self.inference_files
+            else None
         )
 
     def get_train_data(self):
