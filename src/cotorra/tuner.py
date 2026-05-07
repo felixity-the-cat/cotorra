@@ -4,6 +4,8 @@
 train a model with hyperparameter tuning
 """
 
+from omegaconf import OmegaConf
+
 from cotorra.trainer import Trainer
 
 
@@ -14,7 +16,7 @@ class Tuner(Trainer):
     @staticmethod
     def optuna_hp_space(trial):
         return {
-            "learning_rate": trial.suggest_float("learning_rate", 1e-5, 5e-4, log=True),
+            "learning_rate": trial.suggest_float("learning_rate", 1e-4, 5e-4, log=True),
             "gradient_accumulation_steps": trial.suggest_int(
                 "gradient_accumulation_steps", 1, 3
             ),
@@ -27,9 +29,10 @@ class Tuner(Trainer):
         for n, v in best_trial.hyperparameters.items():
             setattr(self.trainer.args, n, v)
         self.trainer.train()
-        self.trainer.model.save_pretrained(
-            self.output_home / f"mdl-{self.cfg.run_name}"
-        )
+        self.trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
+
+        with open(self.output_home / f"mdl-{self.run_name}-tuning.yaml", "w") as f:
+            f.write(OmegaConf.to_yaml(self.cfg))
 
         if verbose:
             self.logger.summarize_trained_model(

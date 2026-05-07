@@ -1,4 +1,4 @@
-## Typical workflow
+## Full workflow
 
 <details>
 
@@ -20,55 +20,43 @@ esac
 
 </details>
 
-1. We start with [MIMIC data](https://mimic.mit.edu) that's been converted to the
-   [CLIF standard](https://clif-icu.com):
-   https://physionet.org/content/mimic-iv-ext-clif. We first collate and tokenize
-   it with the [cocoa package](https://github.com/bbj-lab/cocoa).
+1. We run [cocoa](https://github.com/bbj-lab/cocoa) on the full
+   [MIMIC dataset](https://mimic.mit.edu) that's been converted to
+   [CLIF](https://physionet.org/content/mimic-iv-ext-clif). We also use
+   [clipy package](https://common-longitudinal-icu-data-format.github.io/clifpy/)
+   to create the sofa table and process the respiratory support and medication
+   tables.
 
    ```sh
-   cocoa pipeline \
-       --raw-data-home "${hm}/development-sample-21/raw-mimic/dev" \
-       --processed-data-home ./processed/dev \
+   for s in mimic ucmc; do
+      cocoa collate \
+         --raw-data-home "${hm}/data-raw/${s}-2.1.0/" \
+         --processed-data-home "./processed/${s}" \
+         --verbose
+   done
+
+   cocoa tokenize \
+       --processed-data-home ./processed/mimic \
        --verbose
+
+   # apply mimic-native tokenizer to ucmc
+   cocoa tokenize \
+       --processed-data-home ./processed/ucmc \
+       --tokenizer-home ./processed/mimic/tokenizer.yaml \
+       --verbose
+
+   for s in mimic ucmc; do
+      cocoa winnow \
+         --processed-data-home "./processed/${s}" \
+         --verbose
+   done
    ```
 
-2. Next we train a model on this data (with hyperparameter tuning):
+2. Next we tune a model on this data:
 
    ```sh
    cotorra tune \
-       --processed-data-home ../cocoa/processed/dev \
-       --output-home ./output/dev/ \
-       --model-config ./config/model/llama-32-lite.yaml \
+       --processed-data-home ../cocoa/processed/mimic \
+       --output-home ./output/mimic/ \
        --verbose
    ```
-
-3. You can get generative predictions with:
-
-   ```sh
-   cotorra generative-score \
-       --processed-data-home ../cocoa/processed/dev \
-       --output-home ./output/dev/ \
-       --verbose
-   ```
-
-4. You can get representations of the initial parts of the sequences and
-   rep-based predictions with:
-
-   ```sh
-   cotorra extract \
-       --processed-data-home ../cocoa/processed/dev \
-       --output-home ./output/dev/
-
-   cotorra rep-based-score \
-       --processed-data-home ../cocoa/processed/dev \
-       --verbose
-   ```
-
-<!-- prettier-ignore-start -->
-> [!TIP]
-> For this example, we used a small fraction of the whole dataset, allowing commands to
-> complete in a timely manner. For serious use cases, consider using a terminal
-> multiplexer like [tmux](https://github.com/tmux/tmux/wiki) or
-> [screen](https://www.gnu.org/software/screen/) so that commands  will continue to
-> run if your connection is interrupted.
-<!-- prettier-ignore-end -->

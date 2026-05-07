@@ -57,6 +57,7 @@ class Trainer:
             .resolve()
         )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
+        self.run_name = self.cfg.get("run_name", self.cfg.wandb.get("run_name", ""))
         self.loader = Loader(self.cfg, self.processed_data_home)
         self.logger = Logger()
 
@@ -112,9 +113,10 @@ class Trainer:
 
     def train(self, verbose=False):
         self.trainer.train()
-        self.trainer.model.save_pretrained(
-            self.output_home / f"mdl-{self.cfg.run_name}"
-        )
+        self.trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
+
+        with open(self.output_home / f"mdl-{self.run_name}-training.yaml", "w") as f:
+            f.write(OmegaConf.to_yaml(self.cfg))
 
         if verbose:
             self.logger.summarize_trained_model(
@@ -126,4 +128,4 @@ class Trainer:
 
 if __name__ == "__main__":
     self = Trainer()
-    self.train(verbose=True)
+    # self.train(verbose=True)

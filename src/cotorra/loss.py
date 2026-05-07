@@ -7,8 +7,8 @@ note this code only runs when configured with `custom_loss: !!bool true`
 
 import numpy as np
 import torch as t
-import wandb
 
+import wandb
 from cotorra.logger import Logger
 
 
@@ -65,13 +65,13 @@ class Loss:
             mask = self.label_to_cat.to(device=labels.device)[shift_labels] == i
             if not mask.any():
                 continue
-            shift_labels = shift_labels[mask]
-            shift_logits = shift_logits[mask][:, self.label_to_cat == i]
-            shift_preds = t.softmax(shift_logits, dim=-1) @ (
+            cat_labels = shift_labels[mask]
+            cat_logits = shift_logits[mask][:, self.label_to_cat == i]
+            cat_preds = t.softmax(cat_logits, dim=-1) @ (
                 self.label_to_q[self.label_to_cat == i]
-            ).to(device=shift_logits.device)
-            shift_true = self.label_to_q.to(device=shift_labels.device)[shift_labels]
-            loss += t.nn.MSELoss()(shift_preds, shift_true)
+            ).to(device=cat_logits.device)
+            cat_true = self.label_to_q.to(device=cat_labels.device)[cat_labels]
+            loss += t.nn.MSELoss()(cat_preds, cat_true)
         return loss
 
     def label_weighted_loss(self, outputs, labels, **kwargs):

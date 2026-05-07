@@ -1,11 +1,11 @@
 %YAML 1.2
 ---
-processed_data_home: ../cocoa/processed # where processed data lives
+processed_data_home: ../cocoa/processed/mimic # where processed data lives
 output_home: ./output # where you can find trained models
 
-model_config: ./config/model/llama-32.yaml
+model_config: ./config/model/llama-32-lite.yaml
 max_seq_len: !!int &max_len 4096
-n_epochs: !!int 3
+n_epochs: !!int 2
 run_name: &run_name cotorra-tuning
 
 tokens_of_interest: &tois
@@ -28,7 +28,7 @@ tokens_of_interest: &tois
   - SOFA//renal-4
   - SOFA//liver-4
   - SOFA//cv-4
-  - ASMT//cam_total_positive
+  - ASMT//cam_total_yes
 
 wandb:
   project: cotorra
