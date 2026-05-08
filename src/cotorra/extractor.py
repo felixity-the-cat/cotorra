@@ -4,8 +4,10 @@
 extract representations up to the thresholds created by the cocoa winnower
 """
 
+import math
 import pathlib
 
+import numpy as np
 import torch as t
 from omegaconf import OmegaConf
 from torch.nn.utils.rnn import pad_sequence
@@ -81,7 +83,7 @@ class Extractor:
             p_ids = None
         return {"input_ids": input_ids, "position_ids": p_ids}
 
-    def extract_final(self, batch):
+    def extract_final(self, batch, all_times: bool = False):
         collated = self.collate_fn(batch)
         first_eos = t.where(
             (hits := (collated["input_ids"] == self.model.config.eos_token_id)).any(
@@ -95,24 +97,43 @@ class Extractor:
             features = self.model(**collated, output_hidden_states=True).hidden_states[
                 -1
             ]  # last hidden layer
-        batch["features"] = (
-            features[t.arange(len(first_eos)), first_eos].float().cpu().numpy()
-        )
+        if all_times:
+            features = features.half().cpu().numpy()
+            collated = np.full(
+                shape=(features.shape[0], self.cfg.max_seq_len, features.shape[-1]),
+                fill_value=np.nan,
+            )
+            lengths = first_eos.cpu().numpy()[:, None]
+            out_mask = np.arange(collated.shape[1]) <= lengths
+            feat_mask = np.arange(features.shape[1]) <= lengths
+            collated[out_mask] = features[feat_mask]
+            batch["features"] = collated
+        else:
+            batch["features"] = (
+                features[t.arange(len(first_eos)), first_eos].half().cpu().numpy()
+            )
         return batch
 
-    def extract(self):
-        self.ds = self.loader.for_inference.with_format("torch").map(
-            self.extract_final,
-            batched=True,
-            batch_size=self.cfg.get("extract", {}).get("batch_size", 8),
-        )
-        for split, dset in self.ds.items():
-            dset.to_parquet(self.processed_data_home / f"features-{split}.parquet")
+    def extract(self, all_times: bool = False):
+        a = "-all" if all_times else ""
+        shard_size = self.cfg.get("extract", {}).get("shard_size", None)
+        ds = self.loader.for_inference.with_format("torch")
+        for split, dset in ds.items():
+            n = math.ceil(len(dset) / shard_size) if shard_size else 1
+            for i in range(n):
+                index = f"-{i:05d}-of-{n:05d}" if n > 1 else ""
+                dset.shard(num_shards=n, index=i).map(
+                    lambda batch: self.extract_final(batch, all_times=all_times),
+                    batched=True,
+                    batch_size=self.cfg.get("extract", {}).get("batch_size", 8),
+                ).to_parquet(
+                    self.processed_data_home / f"features{a}-{split}{index}.parquet"
+                )
 
 
 if __name__ == "__main__":
     self = Extractor()
-    # self.extract()
+    self.extract()
 
     # batch_eg = self.loader.dataset.with_format("torch")["training"].batch(8)[0]
     # collated_eg = self.collate_fn(batch_eg)

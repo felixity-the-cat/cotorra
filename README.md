@@ -115,25 +115,52 @@ lives under `config/`. The entrypoint is `config/main.yaml`:
 
 - **processed_data_home**: Path to processed data (tokenized timelines, splits,
   tokenizer config).
+- **output_home**: Directory to save model outputs and checkpoints.
 - **model_config**: Path to the model configuration YAML (e.g.,
   config/model/llama-32-lite.yaml). [see below]
 - **max_seq_len**: Maximum sequence length for model input.
 - **n_epochs**: Number of epochs (handled in the dataloader, not the trainer).
+- **run_name**: Name for the current run (referenced by `wandb` and
+  `training_args`).
+- **tokens_of_interest**: List of special tokens to upweight during training
+  (referenced by loss config).
 - **wandb**:
   - **project**: Weights & Biases project name for experiment tracking.
   - **run_name**: Name for the current run.
-- **output_home**: Directory to save model outputs and checkpoints.
-- **tokens_of_interest**: List of special tokens to upweight during training.
-- **toi_weight**: Weight multiplier for tokens of interest in the loss function.
+- **custom_loss**: Boolean flag to enable custom loss functions (default:
+  `false`).
+- **quantile_token_loss** _(optional)_: Upweights loss on quantile boundary
+  tokens.
+  - **qt_weight**: Weight multiplier for quantile tokens.
+- **label_weighted_loss** _(optional)_: Upweights loss on specific tokens of
+  clinical interest.
+  - **tokens_of_interest**: List of token labels to upweight.
+  - **toi_weight**: Weight multiplier applied to those tokens.
+- **time_based_rope** _(optional)_: Enables time-aware rotary position
+  embeddings.
+  - **sec_per_pos_id**: Number of seconds represented by one position id
+    increment.
 - **training_args**: Arguments passed to HuggingFace's
   [`TrainingArguments`](https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments)
 - **tuning_args**: Arguments passed to HuggingFace's
   [`hyperparameter_search`](https://huggingface.co/docs/transformers/hpo_train?backends=Optuna)
-
-<!-- prettier-ignore-start -->
-> [!NOTE]
-> You can also configure customizable loss functions here.
-<!-- prettier-ignore-end -->
+  when `cotorra tune` is called
+- **extract**: Configuration for the `cotorra extract` command.
+  - **max_len**: Maximum input length (tokens) during extraction.
+  - **batch_size**: Batch size for inference.
+  - **shard_size** _(optional)_: Number of samples per output parquet shard. Omit
+    to write a single file per split.
+- **score**: Configuration for the `cotorra generative-score` command.
+  - **max_len**: Maximum input length (tokens) during scoring.
+  - **n_samp**: Number of Monte Carlo samples per input per trajectory type.
+  - **target_tokens**: Token-based outcomes of interest to score.
+  - **end_tokens**: Tokens that naturally terminate a generated sequence (e.g.
+    `EOS`).
+  - **suppressed_tokens**: Tokens to suppress via logit bias during generation
+    (e.g. `PAD`).
+  - **trunc_id**: Token id forced after the time horizon is exceeded.
+  - **max_time**: Maximum time horizon in minutes.
+  - **batch_size**: Batch size for inference.
 
 #### Model configuration ([example](config/model/llama-32-lite.yaml))
 
@@ -165,7 +192,7 @@ We provide a CLI:
 ```
  Usage: cotorra [OPTIONS] COMMAND [ARGS]...
 
- Configurable training for generative event models
+ Configurable training for generative event models (v26.2.0)
 
 ╭─ Options ───────────────────────────────────────────────────────────────────╮
 │ --install-completion          Install completion for the current shell.     │
@@ -256,11 +283,13 @@ with commands:
   │ --processed-data-home  -p      TEXT  Processed data directory (overrides    │
   │                                      config)                                │
   │ --output-home          -o      TEXT  Output directory for trained models    │
+  │ --all-times            -a            Extract features for all time steps    │
+  │                                      (instead of just the final one)?       │
   │ --help                               Show this message and exit.            │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
-- `cotorra rep-based-score`
+- `cotorra rep-based-score` (note: you need to run `extract` first)
 
   ```
   Usage: cotorra rep-based-score [OPTIONS]

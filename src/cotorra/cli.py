@@ -6,6 +6,7 @@ CLI for cotorra - configurable training for generative event models
 
 import pathlib
 import time
+from importlib.metadata import version
 from typing import Annotated, Optional
 
 import typer
@@ -17,8 +18,11 @@ from cotorra.scorer_rep_based import RepBasedScorer
 from cotorra.trainer import Trainer
 from cotorra.tuner import Tuner
 
+__version__ = version("cotorra")
+
 app = typer.Typer(
-    name="cotorra", help="Configurable training for generative event models"
+    name="cotorra",
+    help=f"Configurable training for generative event models (v{__version__})",
 )
 console = Console()
 
@@ -141,6 +145,15 @@ def extract(
         Optional[str],
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
     ] = None,
+    all_times: Annotated[
+        bool,
+        typer.Option(
+            "--all-times",
+            "-a",
+            help="Extract features for all time steps (instead of just the final one)?",
+            is_flag=True,
+        ),
+    ] = False,
 ):
     """
     Extract representations from a trained model.
@@ -152,11 +165,12 @@ def extract(
             processed_data_home=processed_data_home,
             output_home=output_home,
         )
-        extractor.extract()
+        extractor.extract(all_times=all_times)
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Extraction completed in {t1 - t0:.2f}s.")
         for split in extractor.loader.splits:
-            output = extractor.processed_data_home / f"features-{split}.parquet"
+            a = "-all" if all_times else ""
+            output = extractor.processed_data_home / f"features{a}-{split}.parquet"
             print(f" Output: {output}")
 
 
