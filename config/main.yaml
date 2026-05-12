@@ -1,6 +1,6 @@
 %YAML 1.2
 ---
-processed_data_home: /processed/mimic # where processed data lives
+processed_data_home: ./processed/mimic # where processed data lives
 output_home: ./output/mimic # where you can find trained models
 
 model_config: ./config/model/llama-32-lite.yaml

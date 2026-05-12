@@ -57,6 +57,9 @@ class Trainer:
             .resolve()
         )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
+        self.loss = (
+            Loss(self.cfg, self.tkzr_cfg).custom_loss if self.cfg.custom_loss else None
+        )
         self.run_name = self.cfg.get("run_name", self.cfg.wandb.get("run_name", ""))
         self.loader = Loader(self.cfg, self.processed_data_home)
         self.logger = Logger()
@@ -64,9 +67,7 @@ class Trainer:
         self.trainer = t_Trainer(
             model_init=self.model_init,
             data_collator=self.collate_fn,
-            compute_loss_func=Loss(self.cfg, self.tkzr_cfg).custom_loss
-            if self.cfg.custom_loss
-            else None,
+            compute_loss_func=self.loss,
             train_dataset=self.loader.get_train_data(),
             eval_dataset=self.loader.get_tuning_data(),
             args=TrainingArguments(
