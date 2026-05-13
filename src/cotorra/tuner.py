@@ -23,20 +23,21 @@ class Tuner(Trainer):
         }
 
     def train(self, verbose=False):
-        best_trial = self.trainer.hyperparameter_search(
+        trainer = self._make_trainer()
+        best_trial = trainer.hyperparameter_search(
             hp_space=self.optuna_hp_space, **self.cfg.tuning_args
         )
         for n, v in best_trial.hyperparameters.items():
-            setattr(self.trainer.args, n, v)
-        self.trainer.train()
-        self.trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
+            setattr(trainer.args, n, v)
+        trainer.train()
+        trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
 
         with open(self.output_home / f"mdl-{self.run_name}-tuning.yaml", "w") as f:
             f.write(OmegaConf.to_yaml(self.cfg))
 
         if verbose:
             self.logger.summarize_trained_model(
-                model=self.trainer.model,
+                model=trainer.model,
                 bos_token_id=self.tkzr_cfg.lookup["BOS"],
                 reverse={v: k for k, v in self.tkzr_cfg.lookup.items()},
             )

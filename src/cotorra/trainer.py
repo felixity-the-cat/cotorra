@@ -100,9 +100,8 @@ class Trainer:
             p_ids += t.arange(p_ids.shape[-1], device=p_ids.device, dtype=p_ids.dtype)
             return {"input_ids": input_ids, "labels": input_ids, "position_ids": p_ids}
 
-    def train(self, verbose=False):
-
-        trainer = t_Trainer(
+    def _make_trainer(self) -> t_Trainer:
+        return t_Trainer(
             model_init=self.model_init,
             data_collator=self.collate_fn,
             compute_loss_func=self.loss,
@@ -114,6 +113,9 @@ class Trainer:
             callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
         )
 
+    def train(self, verbose=False):
+
+        trainer = self._make_trainer()
         trainer.train()
         trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
 
