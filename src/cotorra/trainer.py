@@ -64,18 +64,6 @@ class Trainer:
         self.loader = Loader(self.cfg, self.processed_data_home)
         self.logger = Logger()
 
-        self.trainer = t_Trainer(
-            model_init=self.model_init,
-            data_collator=self.collate_fn,
-            compute_loss_func=self.loss,
-            train_dataset=self.loader.get_train_data(),
-            eval_dataset=self.loader.get_tuning_data(),
-            args=TrainingArguments(
-                output_dir=str(self.output_home), **self.cfg.training_args
-            ),
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
-        )
-
         os.environ["WANDB_PROJECT"] = self.cfg.get("wandb", {}).get(
             "project", "cotorra"
         )
@@ -113,15 +101,28 @@ class Trainer:
             return {"input_ids": input_ids, "labels": input_ids, "position_ids": p_ids}
 
     def train(self, verbose=False):
-        self.trainer.train()
-        self.trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
+
+        trainer = t_Trainer(
+            model_init=self.model_init,
+            data_collator=self.collate_fn,
+            compute_loss_func=self.loss,
+            train_dataset=self.loader.get_train_data(),
+            eval_dataset=self.loader.get_tuning_data(),
+            args=TrainingArguments(
+                output_dir=str(self.output_home), **self.cfg.training_args
+            ),
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
+        )
+
+        trainer.train()
+        trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
 
         with open(self.output_home / f"mdl-{self.run_name}-training.yaml", "w") as f:
             f.write(OmegaConf.to_yaml(self.cfg))
 
         if verbose:
             self.logger.summarize_trained_model(
-                model=self.trainer.model,
+                model=trainer.model,
                 bos_token_id=self.tkzr_cfg.lookup["BOS"],
                 reverse={v: k for k, v in self.tkzr_cfg.lookup.items()},
             )
