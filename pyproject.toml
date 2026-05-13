@@ -16,7 +16,6 @@
         "polars",
         "rich",
         "scikit-learn",
-        "sglang",
         "torch",
         "transformers",
         "typer",
@@ -48,6 +47,7 @@
         dev = [ "ruff>=0.15.4" ]
         gen = [
             "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
+            "sglang",
         ]
 
 [tool.ruff]
