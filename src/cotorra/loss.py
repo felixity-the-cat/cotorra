@@ -82,6 +82,14 @@ class Loss:
             weight=self.weights.to(logits.device, dtype=logits.dtype)
         )(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
 
+    def x_ent_loss(self, outputs, labels, **kwargs):
+        logits = outputs.get("logits")  # (batch, seq_len, vocab_size)
+        shift_logits = logits[:, :-1, :].contiguous()
+        shift_labels = labels[:, 1:].contiguous()
+        return t.nn.CrossEntropyLoss()(
+            shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)
+        )
+
     def custom_loss(self, outputs, labels, **kwargs):
         loss = 0.0
         log = dict()
@@ -89,6 +97,10 @@ class Loss:
             label_weighted_loss = self.label_weighted_loss(outputs, labels)
             log |= {"label_weighted_loss": label_weighted_loss.item()}
             loss += label_weighted_loss
+        else:
+            x_ent_loss = self.x_ent_loss(outputs, labels)
+            log |= {"x_ent_loss": x_ent_loss.item()}
+            loss += x_ent_loss
         if "quantile_token_loss" in self.cfg:
             quantile_token_loss = self.quantile_token_loss(outputs, labels)
             log |= {"quantile_token_loss": quantile_token_loss.item()}
