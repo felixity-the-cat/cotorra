@@ -31,8 +31,7 @@ git clone git@github.com:bbj-lab/cotorra.git
 cd cotorra
 python -m venv .venv
 . .venv/bin/activate
-pip install "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git"
-pip install -e . \
+pip install -e ".[gen]" \
   --index-url https://download.pytorch.org/whl/cu128 \
   --extra-index-url https://pypi.org/simple
 ```

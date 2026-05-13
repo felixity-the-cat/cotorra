@@ -14,7 +14,6 @@
         "omegaconf",
         "optuna",
         "polars",
-        "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
         "rich",
         "scikit-learn",
         "sglang",
@@ -47,6 +46,9 @@
 
     [project.optional-dependencies]
         dev = [ "ruff>=0.15.4" ]
+        gen = [
+            "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
+        ]
 
 [tool.ruff]
     extend-exclude = [ "*.md" ]
