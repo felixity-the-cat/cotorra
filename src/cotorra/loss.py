@@ -28,10 +28,8 @@ class Loss:
         self.loss_functions = {
             "mse": t.nn.MSELoss,
             "mae": t.nn.L1Loss,
-            "smooth_mae": t.nn.SmoothL1Loss
+                "smooth_mae": t.nn.SmoothL1Loss
         }
-
-        self.loss_function = self.loss_function[self.cfg.quantile_token_loss.loss_type]
 
         if "label_weighted_loss" in self.cfg:
             self.toi_flag = np.isin(
@@ -67,6 +65,22 @@ class Loss:
                 np.unique(self.qt_cats, return_inverse=True)[1]
             )
             self.n_cats: int = self.label_to_cat.max().item() + 1
+            if "order" in self.cfg.quantile_token_loss:
+                self.order = self.cfg.quantile_token_loss.order
+            else:
+                self.order = "aggregate_first"
+            if "loss_type" in self.cfg.quantile_token_loss:
+                self.loss_function = self.loss_functions[self.cfg.quantile_token_loss.loss_type]
+            else:
+                self.loss_function = t.nn.MSELoss
+            if "kernel" in self.cfg.quantile_token_loss:
+                if "type" in self.cfg.quantile_token_loss.kernel:
+                    self.kernel_type = self.cfg.quantile_token_loss.kernel.type
+                else:
+                    self.kernel_type = "linear"
+                if "factor" in self.cfg.quantile_token_loss.kernel:
+                    self.kernel_factor = self.cfg.quantile_token_loss.kernel.factor
+
 
     def quantile_token_loss(self, outputs, labels, **kwargs):
         total_loss = t.zeros((), device=labels.device)
@@ -79,9 +93,9 @@ class Loss:
             ).to(device=cat_logits.device)
             cat_true = self.label_to_q.to(device=cat_labels.device)[cat_labels]
             if self.cfg.quantile_token_loss.kernel.type in self.kernels:
-                kernel = self.kernels[self.cfg.quantile_token_loss.kernel.type]
-                cat_preds = kernel(cat_preds, self.cfg.quantile_token_loss.kernel.factor)
-                cat_true = kernel(cat_true, self.cfg.quantile_token_loss.kernel.factor)
+                kernel = self.kernels[self.kernel_type]
+                cat_preds = kernel(cat_preds, self.kernel_factor)
+                cat_true = kernel(cat_true, self.kernel_factor)
             return self.loss_function()(cat_preds, cat_true)
         def loss_first(cat_logits, cat_labels, i):
             cat_true = self.label_to_q.to(device=cat_labels.device)[cat_labels]
@@ -89,9 +103,9 @@ class Loss:
                 self.label_to_q[self.label_to_cat == i]
             ).to(device=cat_logits.device)
             if self.cfg.quantile_token_loss.kernel.type in self.kernels:
-                kernel = self.kernels[self.cfg.quantile_token_loss.kernel.type]
-                values = kernel(values, self.cfg.quantile_token_loss.kernel.factor)
-                cat_true = kernel(cat_true, self.cfg.quantile_token_loss.kernel.factor)
+                kernel = self.kernels[self.kernel_type]
+                values = kernel(values, self.kernel_factor)
+                cat_true = kernel(cat_true, self.kernel_factor)
             cat_true_full = cat_true.unsqueeze(-1).expand(*cat_true.shape, values.shape[0])
             losses = self.loss_function(reduction = 'none')(values, cat_true_full)
             return (t.softmax(cat_logits, dim=-1) * losses).sum(dim=-1).mean()
@@ -103,7 +117,7 @@ class Loss:
                 continue
             cat_labels = shift_labels[mask]
             cat_logits = shift_logits[mask][:, self.label_to_cat == i]
-            if self.cfg.quantile_token_loss.order == 'loss_first':
+            if self.order == 'loss_first':
                 loss_del = loss_first(cat_logits, cat_labels, i)
             else: 
                 loss_del = aggregate_first(cat_logits, cat_labels, i)
