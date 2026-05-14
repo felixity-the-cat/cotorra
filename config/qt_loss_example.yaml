@@ -40,8 +40,8 @@ quantile_token_loss:
   kernel:
     type: "cubic"
     factor: 1.0 # keep in [0,1] for cubic or (0,1) for atanh
-    order: "loss_first"
-    loss_type: "mse"
+  order: "loss_first"
+  loss_type: "mse"
 # label_weighted_loss:
 #   tokens_of_interest: *tois
 #   toi_weight: !!float 20.0

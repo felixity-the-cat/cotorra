@@ -22,13 +22,14 @@ class Loss:
         )
         self.logger = Logger()
         self.kernels = {"cubic": lambda x, a: 0.5 + a*4*(x-0.5)**3 + (1-a) * (x - 0.5),
-                        "atanh": lambda x, a: 0.5 + 1/(2*a)*t.atanh(a*(2*x - 1))
+                        "atanh": lambda x, a: 0.5 + 1/(2*a)*t.atanh(a*(2*x - 1)),
+                        "linear": lambda x, a: x
                         }
         
         self.loss_functions = {
             "mse": t.nn.MSELoss,
             "mae": t.nn.L1Loss,
-                "smooth_mae": t.nn.SmoothL1Loss
+            "smooth_mae": t.nn.SmoothL1Loss
         }
 
         if "label_weighted_loss" in self.cfg:
