@@ -21,7 +21,16 @@ class Loss:
             sorted(self.tkzr_cfg.lookup, key=self.tkzr_cfg.lookup.get)
         )
         self.logger = Logger()
-
+        self.kernels = {"cubic": lambda x, a: 0.5 + a*4*(x-0.5)**3 + (1-a) * (x - 0.5),
+                        "atanh": lambda x, a: 0.5 + 1/(2*a)*t.atanh(a*(2*x - 1))
+                        }
+        # WIP
+        # self.loss_functions = {
+        #     "mse": t.nn.MSELoss(),
+        #     "mae": t.nn.L1Loss(),
+        #     "smooth_mae": t.nn.SmoothL1Loss(),
+        #     "w1_dist": 
+        # }
         if "label_weighted_loss" in self.cfg:
             self.toi_flag = np.isin(
                 self.vocab, self.cfg.label_weighted_loss.tokens_of_interest
@@ -47,7 +56,7 @@ class Loss:
                 zip(*np.char.rsplit(self.vocab[self.q_type], sep="Q", maxsplit=1)),
             )
             self.qt_nums = (
-                t.tensor(self.qt_vals.astype(int) + 0.5) / self.tkzr_cfg.cfg.n_bins
+                t.tensor(self.qt_vals.astype(int)) / (self.tkzr_cfg.cfg.n_bins - 1)
             ).to(dtype=t.float32)
             self.label_to_q = t.full((len(self.vocab),), float("nan"))
             self.label_to_q[self.q_type] = self.qt_nums
@@ -71,6 +80,10 @@ class Loss:
                 self.label_to_q[self.label_to_cat == i]
             ).to(device=cat_logits.device)
             cat_true = self.label_to_q.to(device=cat_labels.device)[cat_labels]
+            if self.cfg.quantile_token_loss.kernel.type in self.kernels:
+                kernel = self.kernels[self.cfg.quantile_token_loss.kernel.type]
+                cat_preds = kernel(cat_preds, self.cfg.quantile_token_loss.kernel.factor)
+                cat_true = kernel(cat_true, self.cfg.quantile_token_loss.kernel.factor)
             loss += t.nn.MSELoss()(cat_preds, cat_true)
         return loss
 
