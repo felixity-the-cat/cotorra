@@ -199,8 +199,9 @@ class Loss:
             loss += x_ent_loss
         if "quantile_token_loss" in self.cfg:
             quantile_token_loss, frac_numeric = self.quantile_token_loss(outputs, labels)
-            log |= {"quantile_token_loss": quantile_token_loss.item()/frac_numeric}
+            log |= {"quantile_token_loss": quantile_token_loss.item()/frac_numeric, "frac_numeric": frac_numeric}
             loss += self.cfg.quantile_token_loss.qt_weight * quantile_token_loss
+            loss = loss/2
         if wandb.run is not None:
             log |= {"custom_loss": loss.item()}
             wandb.log(log)
