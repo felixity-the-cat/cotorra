@@ -106,17 +106,20 @@ package is designed to do that in a configurable way.
 
 ## Configuration
 
-This library can be extensively customized for your use purposes through a yaml
-configuration, as opposed to having to having to write python. All configuration
-lives under `config/`. The entrypoint is `config/main.yaml`:
+This library can be extensively customized through yaml configuration files. Each
+command has its own default config under `src/cotorra/config/`, which you can
+override by passing a config file via the appropriate CLI flag. Any value can
+also be overridden programmatically via `**kwargs` which are merged on top of the
+YAML config via OmegaConf.
 
-#### Main configuration ([example](config/main.yaml))
+#### Training configuration ([example](src/cotorra/config/training.yaml))
 
-- **processed_data_home**: Path to processed data (tokenized timelines, splits,
-  tokenizer config).
-- **output_home**: Directory to save model outputs and checkpoints.
-- **model_config**: Path to the model configuration YAML (e.g.,
-  config/model/llama-32-lite.yaml). [see below]
+Used by `cotorra train` and `cotorra tune`.
+
+- **model_name**: Name or path of the HuggingFace model (e.g.,
+  `meta-llama/Llama-3.2-1B`).
+- **model_args**: Model architecture parameters passed directly to HuggingFace's
+  [`AutoConfig`](https://huggingface.co/docs/transformers/en/model_doc/auto).
 - **max_seq_len**: Maximum sequence length for model input.
 - **n_epochs**: Number of epochs (handled in the dataloader, not the trainer).
 - **run_name**: Name for the current run (referenced by `wandb` and
@@ -140,16 +143,33 @@ lives under `config/`. The entrypoint is `config/main.yaml`:
   - **sec_per_pos_id**: Number of seconds represented by one position id
     increment.
 - **training_args**: Arguments passed to HuggingFace's
-  [`TrainingArguments`](https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments)
+  [`TrainingArguments`](https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments).
 - **tuning_args**: Arguments passed to HuggingFace's
   [`hyperparameter_search`](https://huggingface.co/docs/transformers/hpo_train?backends=Optuna)
-  when `cotorra tune` is called
-- **extract**: Configuration for the `cotorra extract` command.
+  when `cotorra tune` is called.
+
+#### Extraction configuration ([example](src/cotorra/config/extraction.yaml))
+
+Used by `cotorra extract`.
+
+- **max_seq_len**: Maximum sequence length.
+- **time_based_rope** _(optional)_: Enables time-aware position ids during
+  extraction (must match the setting used at training time).
+  - **sec_per_pos_id**: Number of seconds represented by one position id
+    increment.
+- **extract**:
   - **max_len**: Maximum input length (tokens) during extraction.
   - **batch_size**: Batch size for inference.
   - **shard_size** _(optional)_: Number of samples per output parquet shard. Omit
     to write a single file per split.
-- **score**: Configuration for the `cotorra generative-score` command.
+
+#### Scoring configuration ([example](src/cotorra/config/scoring.yaml))
+
+Used by `cotorra generative-score` and `cotorra rep-based-score`.
+
+- **run_name**: Name for the current run, used to label output files.
+- **tokens_of_interest**: List of token-based outcomes of interest.
+- **score**:
   - **max_len**: Maximum input length (tokens) during scoring.
   - **n_samp**: Number of Monte Carlo samples per input per trajectory type.
   - **target_tokens**: Token-based outcomes of interest to score.
@@ -161,26 +181,20 @@ lives under `config/`. The entrypoint is `config/main.yaml`:
   - **max_time**: Maximum time horizon in minutes.
   - **batch_size**: Batch size for inference.
 
-#### Model configuration ([example](config/model/llama-32-lite.yaml))
-
-- **model_name**: Name or path of the model (e.g., meta-llama/Llama-3.2-1B).
-- **model_args**: Model architecture parameters passed directly to HuggingFace's
-  [`AutoConfig`](https://huggingface.co/docs/transformers/en/model_doc/auto)
-  object
-
 ## Usage
 
-To use a different dataset or schema, create new YAML files under
-`config/collation/` and `config/tokenization/` and update the paths in
-`config/main.yaml`, or pass your options directly to the `Trainer` object. The
-`Trainer` class accepts `**kwargs` that are merged on top of the YAML config via
+To use a different dataset or schema, create new YAML config files and pass them
+via the appropriate CLI flag, or pass your options directly to the class. All
+classes accept `**kwargs` that are merged on top of the YAML config via
 OmegaConf, so any config value can be overridden programmatically:
 
 ```python
 from cotorra.trainer import Trainer
 
-# Override config values at instantiation
-trainer = Trainer(processed_data_home="~/other/data", output_home="~/other/output")
+trainer = Trainer(
+    processed_data_home="~/other/data",
+    output_home="~/other/output",
+)
 trainer.train()
 ```
 
@@ -191,7 +205,7 @@ We provide a CLI:
 ```
  Usage: cotorra [OPTIONS] COMMAND [ARGS]...
 
- Configurable training for generative event models (v26.2.0)
+ Configurable training for generative event models (v26.3.1)
 
 ╭─ Options ───────────────────────────────────────────────────────────────────╮
 │ --install-completion          Install completion for the current shell.     │
@@ -208,6 +222,8 @@ We provide a CLI:
 │                   save them to parquet.                                     │
 │ rep-based-score   Generate rep-based scores for the token-based outcomes of │
 │                   interest.                                                 │
+│                   Note: this requires that features have already been       │
+│                   extracted and saved                                       │
 ╰─────────────────────────────────────────────────────────────────────────────╯
 ```
 
@@ -221,14 +237,15 @@ with commands:
   Train a model on tokenized data. For tokenization, consult the cocoa package.
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │ --main-config          -m      PATH  Main configuration file (overrides     │
-  │                                      default)                               │
-  │ --model-config                 PATH  Model configuration file               │
-  │ --processed-data-home  -p      TEXT  Processed data directory (overrides    │
-  │                                      config)                                │
-  │ --output-home          -o      TEXT  Output directory for trained models    │
-  │ --verbose              -v            Verbose logging for collate            │
-  │ --help                               Show this message and exit.            │
+  │    --training-config      -t      PATH  Training configuration file         │
+  │                                         (overrides default)                 │
+  │ *  --processed-data-home  -p      TEXT  Processed data directory (overrides │
+  │                                         config)                             │
+  │                                         [required]                          │
+  │ *  --output-home          -o      TEXT  Output directory for trained models │
+  │                                         [required]                          │
+  │    --verbose              -v            Verbose logging for collate         │
+  │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -240,14 +257,15 @@ with commands:
   Run hyperparameter tuning while training a model.
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │ --main-config          -m      PATH  Main configuration file (overrides     │
-  │                                      default)                               │
-  │ --model-config                 PATH  Model configuration file               │
-  │ --processed-data-home  -p      TEXT  Processed data directory (overrides    │
-  │                                      config)                                │
-  │ --output-home          -o      TEXT  Output directory for trained models    │
-  │ --verbose              -v            Verbose logging for collate            │
-  │ --help                               Show this message and exit.            │
+  │    --training-config      -t      PATH  Training configuration file         │
+  │                                         (overrides default)                 │
+  │ *  --processed-data-home  -p      TEXT  Processed data directory (overrides │
+  │                                         config)                             │
+  │                                         [required]                          │
+  │ *  --output-home          -o      TEXT  Output directory for trained models │
+  │                                         [required]                          │
+  │    --verbose              -v            Verbose logging for collate         │
+  │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -259,13 +277,14 @@ with commands:
   Generate SCORE/REACH metrics from a trained model and save them to parquet.
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │ --main-config          -m      PATH  Main configuration file (overrides     │
-  │                                      default)                               │
-  │ --processed-data-home  -p      TEXT  Processed data directory (overrides    │
-  │                                      config)                                │
-  │ --output-home          -o      TEXT  Output directory for score files       │
-  │ --verbose              -v            Verbose logging for collate            │
-  │ --help                               Show this message and exit.            │
+  │    --scoring-config       -s      PATH  Scoring configuration file          │
+  │                                         (overrides default)                 │
+  │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
+  │ *  --model-home           -m      TEXT  Directory of the trained model to   │
+  │                                         score with                          │
+  │                                         [required]                          │
+  │    --verbose              -v            Verbose logging for collate         │
+  │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -277,14 +296,15 @@ with commands:
   Extract representations from a trained model.
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │ --main-config          -m      PATH  Main configuration file (overrides     │
-  │                                      default)                               │
-  │ --processed-data-home  -p      TEXT  Processed data directory (overrides    │
-  │                                      config)                                │
-  │ --output-home          -o      TEXT  Output directory for trained models    │
-  │ --all-times            -a            Extract features for all time steps    │
-  │                                      (instead of just the final one)?       │
-  │ --help                               Show this message and exit.            │
+  │    --extraction-config    -e      PATH  Extraction configuration file       │
+  │                                         (overrides default)                 │
+  │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
+  │ *  --model-home           -m      TEXT  Directory of the trained model to   │
+  │                                         extract from                        │
+  │                                         [required]                          │
+  │    --all-times            -a            Extract features for all time steps │
+  │                                         (instead of just the final one)?    │
+  │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -293,15 +313,15 @@ with commands:
   ```
   Usage: cotorra rep-based-score [OPTIONS]
 
-  Generate rep-based scores for the token-based outcomes of interest.
+  Generate rep-based scores for the token-based outcomes of interest. Note:
+  this requires that features have already been extracted and saved
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │ --main-config          -m      PATH  Main configuration file (overrides     │
-  │                                      default)                               │
-  │ --processed-data-home  -p      TEXT  Processed data directory (overrides    │
-  │                                      config)                                │
-  │ --verbose              -v            Verbose logging for collate            │
-  │ --help                               Show this message and exit.            │
+  │    --scoring-config       -s      PATH  Scoring configuration file          │
+  │                                         (overrides default)                 │
+  │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
+  │    --verbose              -v            Verbose logging for collate         │
+  │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 

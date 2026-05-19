@@ -17,8 +17,8 @@ from transformers import (
 )
 from transformers import Trainer as t_Trainer
 
+from cotorra.configurable import Configurable
 from cotorra.loader import Loader
-from cotorra.logger import Logger
 from cotorra.loss import Loss
 
 
@@ -37,47 +37,33 @@ class TrainerWithCustomLoss(t_Trainer):
             return super().compute_loss(model, inputs, return_outputs, **kwargs)
 
 
-class Trainer:
+class Trainer(Configurable):
     """the meds format dumps training (train), validation (tuning), and test (held_out)
     data into the same file;
     we need to start by fishing out training and validation data"""
 
+    default_file = "training.yaml"
+
     def __init__(
         self,
-        main_cfg: pathlib.Path | str = None,
-        mdl_cfg: pathlib.Path | str = None,
+        training_cfg: pathlib.Path | str = None,
+        processed_data_home: pathlib.Path | str = None,
+        output_home: pathlib.Path | str = None,
         **kwargs,
     ):
-        main_cfg = OmegaConf.load(
-            pathlib.Path(main_cfg if main_cfg is not None else "./config/main.yaml")
-            .expanduser()
-            .resolve()
+        super().__init__(training_cfg, **kwargs)
+
+        self.processed_data_home, self.output_home = map(
+            lambda p: pathlib.Path(p).expanduser().resolve(),
+            [processed_data_home, output_home],
         )
-        mdl_cfg = OmegaConf.load(
-            pathlib.Path(mdl_cfg if mdl_cfg is not None else main_cfg.model_config)
-            .expanduser()
-            .resolve()
-        )
-        self.cfg = OmegaConf.merge(
-            main_cfg,
-            mdl_cfg,
-            OmegaConf.create({k: v for k, v in kwargs.items() if v is not None}),
-        )  # passed cli options override config file here
-        self.processed_data_home = (
-            pathlib.Path(self.cfg.processed_data_home).expanduser().resolve()
-        )
-        self.output_home = (
-            pathlib.Path(self.cfg.get("output_home", self.cfg.get("output_dir")))
-            .expanduser()
-            .resolve()
-        )
+
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
         self.loss = (
             Loss(self.cfg, self.tkzr_cfg).custom_loss if self.cfg.custom_loss else None
         )
         self.run_name = self.cfg.get("run_name", self.cfg.wandb.get("run_name", ""))
-        self.loader = Loader(self.cfg, self.processed_data_home)
-        self.logger = Logger()
+        self.loader = Loader(training_cfg, self.processed_data_home)
 
         os.environ["WANDB_PROJECT"] = self.cfg.get("wandb", {}).get(
             "project", "cotorra"
@@ -146,5 +132,7 @@ class Trainer:
 
 
 if __name__ == "__main__":
-    self = Trainer()
-    # self.train(verbose=True)
+    self = Trainer(
+        processed_data_home="./processed/mimic", output_home="./output/mimic"
+    )
+    self.train(verbose=True)

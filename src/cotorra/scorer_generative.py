@@ -14,40 +14,28 @@ import tqdm
 from omegaconf import OmegaConf
 from quick_sco_re import GenerationConfig, create_engine, generate_and_score
 
-from cotorra.logger import Logger
+from cotorra.configurable import Configurable
 from cotorra.util import batched
 
 
-class GenerativeScorer:
+class GenerativeScorer(Configurable):
+    default_file = "scoring.yaml"
+
     def __init__(
         self,
-        main_cfg: pathlib.Path | str = None,
+        scoring_cfg: pathlib.Path | str = None,
+        processed_data_home: pathlib.Path | str = None,
         model_home: pathlib.Path | str = None,
         **kwargs,
     ):
-        parsed = OmegaConf.load(
-            pathlib.Path(main_cfg if main_cfg is not None else "./config/main.yaml")
-            .expanduser()
-            .resolve()
-        )
-        self.cfg = OmegaConf.merge(
-            parsed, OmegaConf.create({k: v for k, v in kwargs.items() if v is not None})
-        )
+        super().__init__(scoring_cfg, **kwargs)
         self.processed_data_home = (
-            pathlib.Path(self.cfg.processed_data_home).expanduser().resolve()
-        )
-        self.output_home = (
-            pathlib.Path(self.cfg.get("output_home", self.cfg.get("output_dir")))
-            .expanduser()
-            .resolve()
+            pathlib.Path(processed_data_home).expanduser().resolve()
         )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
-        self.logger = Logger()
 
         self.engine = create_engine(
-            model_path=str(pathlib.Path(model_home).expanduser().resolve())
-            if model_home is not None
-            else str(self.output_home / f"mdl-{self.cfg.run_name}"),
+            model_path=str(pathlib.Path(model_home).expanduser().resolve()),
             max_len=self.cfg.score.max_len,
             use_time_horizon="max_time" in self.cfg.score,  # use if max_time configured
         )

@@ -13,38 +13,28 @@ from omegaconf import OmegaConf
 from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoModelForCausalLM
 
+from cotorra.configurable import Configurable
 from cotorra.loader import Loader
-from cotorra.logger import Logger
 
 
-class Extractor:
+class Extractor(Configurable):
     """load a model and extract representations from it"""
+
+    default_file = "extraction.yaml"
 
     def __init__(
         self,
-        main_cfg: pathlib.Path | str = None,
+        extraction_cfg: pathlib.Path | str = None,
+        processed_data_home: pathlib.Path | str = None,
         model_home: pathlib.Path | str = None,
         **kwargs,
     ):
-        parsed = OmegaConf.load(
-            pathlib.Path(main_cfg if main_cfg is not None else "./config/main.yaml")
-            .expanduser()
-            .resolve()
-        )
-        self.cfg = OmegaConf.merge(
-            parsed, OmegaConf.create({k: v for k, v in kwargs.items() if v is not None})
-        )
+        super().__init__(extraction_cfg, **kwargs)
         self.processed_data_home = (
-            pathlib.Path(self.cfg.processed_data_home).expanduser().resolve()
-        )
-        self.output_home = (
-            pathlib.Path(self.cfg.get("output_home", self.cfg.get("output_dir")))
-            .expanduser()
-            .resolve()
+            pathlib.Path(processed_data_home).expanduser().resolve()
         )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
-        self.loader = Loader(self.cfg, self.processed_data_home)
-        self.logger = Logger()
+        self.loader = Loader(extraction_cfg, self.processed_data_home)
         self.device = (
             "cuda"
             if t.cuda.is_available()
@@ -54,8 +44,6 @@ class Extractor:
         )
         self.model = AutoModelForCausalLM.from_pretrained(
             pathlib.Path(model_home).expanduser().resolve()
-            if model_home is not None
-            else self.output_home / f"mdl-{self.cfg.run_name}"
         )
         self.model.to(self.device).eval()
         if not isinstance(self.model.config.pad_token_id, int):

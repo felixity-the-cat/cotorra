@@ -29,15 +29,13 @@ console = Console()
 
 @app.command()
 def train(
-    main_config: Annotated[
+    training_config: Annotated[
         Optional[pathlib.Path],
         typer.Option(
-            "--main-config", "-m", help="Main configuration file (overrides default)"
+            "--training-config",
+            "-t",
+            help="Training configuration file (overrides default)",
         ),
-    ] = None,
-    model_config: Annotated[
-        Optional[pathlib.Path],
-        typer.Option("--model-config", help="Model configuration file"),
     ] = None,
     processed_data_home: Annotated[
         Optional[str],
@@ -46,11 +44,11 @@ def train(
             "-p",
             help="Processed data directory (overrides config)",
         ),
-    ] = None,
+    ] = ...,
     output_home: Annotated[
         Optional[str],
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
-    ] = None,
+    ] = ...,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -64,8 +62,7 @@ def train(
     with console.status("[bold green]Training model..."):
         t0 = time.perf_counter()
         trainer = Trainer(
-            main_cfg=main_config,
-            mdl_cfg=model_config,
+            training_cfg=training_config,
             processed_data_home=processed_data_home,
             output_home=output_home,
         )
@@ -78,15 +75,13 @@ def train(
 
 @app.command()
 def tune(
-    main_config: Annotated[
+    training_config: Annotated[
         Optional[pathlib.Path],
         typer.Option(
-            "--main-config", "-m", help="Main configuration file (overrides default)"
+            "--training-config",
+            "-t",
+            help="Training configuration file (overrides default)",
         ),
-    ] = None,
-    model_config: Annotated[
-        Optional[pathlib.Path],
-        typer.Option("--model-config", help="Model configuration file"),
     ] = None,
     processed_data_home: Annotated[
         Optional[str],
@@ -95,11 +90,11 @@ def tune(
             "-p",
             help="Processed data directory (overrides config)",
         ),
-    ] = None,
+    ] = ...,
     output_home: Annotated[
         Optional[str],
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
-    ] = None,
+    ] = ...,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -113,8 +108,7 @@ def tune(
     with console.status("[bold green]Tuning model..."):
         t0 = time.perf_counter()
         tuner = Tuner(
-            main_cfg=main_config,
-            mdl_cfg=model_config,
+            training_cfg=training_config,
             processed_data_home=processed_data_home,
             output_home=output_home,
         )
@@ -127,24 +121,24 @@ def tune(
 
 @app.command()
 def extract(
-    main_config: Annotated[
+    extraction_config: Annotated[
         Optional[pathlib.Path],
         typer.Option(
-            "--main-config", "-m", help="Main configuration file (overrides default)"
+            "--extraction-config",
+            "-e",
+            help="Extraction configuration file (overrides default)",
         ),
     ] = None,
     processed_data_home: Annotated[
-        Optional[str],
+        str,
+        typer.Option("--processed-data-home", "-p", help="Processed data directory"),
+    ] = ...,
+    model_home: Annotated[
+        str,
         typer.Option(
-            "--processed-data-home",
-            "-p",
-            help="Processed data directory (overrides config)",
+            "--model-home", "-m", help="Directory of the trained model to extract from"
         ),
-    ] = None,
-    output_home: Annotated[
-        Optional[str],
-        typer.Option("--output-home", "-o", help="Output directory for trained models"),
-    ] = None,
+    ] = ...,
     all_times: Annotated[
         bool,
         typer.Option(
@@ -161,9 +155,9 @@ def extract(
     with console.status("[bold green]Extracting representations..."):
         t0 = time.perf_counter()
         extractor = Extractor(
-            main_cfg=main_config,
+            extraction_cfg=extraction_config,
             processed_data_home=processed_data_home,
-            output_home=output_home,
+            model_home=model_home,
         )
         extractor.extract(all_times=all_times)
         t1 = time.perf_counter()
@@ -176,24 +170,24 @@ def extract(
 
 @app.command()
 def generative_score(
-    main_config: Annotated[
+    scoring_config: Annotated[
         Optional[pathlib.Path],
         typer.Option(
-            "--main-config", "-m", help="Main configuration file (overrides default)"
+            "--scoring-config",
+            "-s",
+            help="Scoring configuration file (overrides default)",
         ),
     ] = None,
     processed_data_home: Annotated[
-        Optional[str],
+        str,
+        typer.Option("--processed-data-home", "-p", help="Processed data directory"),
+    ] = ...,
+    model_home: Annotated[
+        str,
         typer.Option(
-            "--processed-data-home",
-            "-p",
-            help="Processed data directory (overrides config)",
+            "--model-home", "-m", help="Directory of the trained model to score with"
         ),
-    ] = None,
-    output_home: Annotated[
-        Optional[str],
-        typer.Option("--output-home", "-o", help="Output directory for score files"),
-    ] = None,
+    ] = ...,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -209,36 +203,34 @@ def generative_score(
     with console.status("[bold green]Generative scoring on held-out data..."):
         t0 = time.perf_counter()
         scorer = GenerativeScorer(
-            main_cfg=main_config,
+            scoring_cfg=scoring_config,
             processed_data_home=processed_data_home,
-            output_home=output_home,
+            model_home=model_home,
         )
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Generative scoring completed in {t1 - t0:.2f}s.")
         out_path = (
-            scorer.output_home
-            / f"scores-generative-{scorer.cfg.wandb.run_name}.parquet"
+            scorer.processed_data_home
+            / f"scores-generative-{scorer.cfg.run_name}.parquet"
         )
         print(f"  Scores: [cyan]{out_path}[/cyan]")
 
 
 @app.command()
 def rep_based_score(
-    main_config: Annotated[
+    scoring_config: Annotated[
         Optional[pathlib.Path],
         typer.Option(
-            "--main-config", "-m", help="Main configuration file (overrides default)"
+            "--scoring-config",
+            "-s",
+            help="Scoring configuration file (overrides default)",
         ),
     ] = None,
     processed_data_home: Annotated[
-        Optional[str],
-        typer.Option(
-            "--processed-data-home",
-            "-p",
-            help="Processed data directory (overrides config)",
-        ),
-    ] = None,
+        str,
+        typer.Option("--processed-data-home", "-p", help="Processed data directory"),
+    ] = ...,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -248,12 +240,13 @@ def rep_based_score(
 ):
     """
     Generate rep-based scores for the token-based outcomes of interest.
+    Note: this requires that features have already been extracted and saved
     """
 
     with console.status("[bold green]Rep-based scoring on held-out data..."):
         t0 = time.perf_counter()
         scorer = RepBasedScorer(
-            main_cfg=main_config, processed_data_home=processed_data_home
+            scoring_cfg=scoring_config, processed_data_home=processed_data_home
         )
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()

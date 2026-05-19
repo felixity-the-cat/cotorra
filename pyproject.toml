@@ -17,11 +17,11 @@
         "rich",
         "scikit-learn",
         "torch",
+        "torchaudio",
+        "torchvision",
+        "tqdm",
         "transformers",
         "typer",
-        "tqdm",
-        "torchvision",
-        "torchaudio",
         "wandb",
     ]
     description = "configurable trainer for generative event models"
@@ -72,3 +72,12 @@
         [tool.ruff.lint.isort]
             known-first-party       = [ "cocoa", "cotorra", "coreopsis" ]
             split-on-trailing-comma = false
+
+[tool.setuptools]
+    include-package-data = true
+
+    [tool.setuptools.packages.find]
+        where = [ "src" ]
+
+    [tool.setuptools.package-data]
+        "cotorra.config" = [ "*.yaml" ]
