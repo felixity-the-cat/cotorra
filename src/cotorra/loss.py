@@ -24,6 +24,7 @@ class Loss:
         self.pool_cats = False
         self.kernels = {"cubic": lambda x, a: 0.5 + a*4*(x-0.5)**3 + (1-a) * (x - 0.5),
                         "atanh": lambda x, a: 0.5 + 1/(2*a)*t.atanh(a*(2*x - 1)),
+                        "piece_const": lambda x, a: t.where((x > 0) & (x < 1),  t.zeros_like(x), 2*(x - 0.5)),
                         "linear": lambda x, a: x
                         }
         
@@ -167,8 +168,6 @@ class Loss:
             total_tokens += n_non
 
         return total_loss / max(total_tokens, 1)
-    
-    #TODO Implement category pooled label_weighted_loss
 
     def label_weighted_loss(self, outputs, labels, **kwargs):
         logits = outputs.get("logits")  # (batch, seq_len, vocab_size)

@@ -170,7 +170,7 @@ def extract(
         print(f"\n[green]✓[/green] Extraction completed in {t1 - t0:.2f}s.")
         for split in extractor.loader.splits:
             a = "-all" if all_times else ""
-            output = extractor.processed_data_home / f"features{a}-{split}.parquet"
+            output = extractor.processed_data_home / f"features{a}-{split}-{extractor.cfg.run_name}.parquet"
             print(f" Output: {output}")
 
 

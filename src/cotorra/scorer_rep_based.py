@@ -4,6 +4,7 @@
 make representation-based predictions on held-out data
 """
 
+import glob as glob_module
 import pathlib
 
 import lightgbm as lgb
@@ -35,9 +36,13 @@ class RepBasedScorer:
 
         self.splits = ("train", "tuning", "held_out")
 
+        run_name = self.cfg.wandb.run_name
         self.features = {
             s: np.vstack(
-                pl.scan_parquet(self.processed_data_home / f"features-{s}.parquet")
+                pl.scan_parquet(sorted(
+                    glob_module.glob(str(self.processed_data_home / f"features-{s}-{run_name}.parquet"))
+                    + glob_module.glob(str(self.processed_data_home / f"features-{s}-{run_name}-[0-9]*.parquet"))
+                ))
                 .select("features")
                 .collect()
                 .to_series()
