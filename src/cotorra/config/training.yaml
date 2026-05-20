@@ -60,11 +60,11 @@ training_args:
   metric_for_best_model: eval_loss
   load_best_model_at_end: !!bool true
   greater_is_better: !!bool false
-  eval_strategy: steps
+  eval_strategy: epoch # `best` became available circa Dec 2024, https://github.com/huggingface/transformers/issues/31626
   prediction_loss_only: !!bool true # may improve training speed
-  save_strategy: best
+  save_strategy: epoch
   ddp_find_unused_parameters: !!bool false
-  neftune_noise_alpha: !!float 5.0
+  # neftune_noise_alpha: !!float 5.0
   auto_find_batch_size: !!bool false # turning this on may cause issues with hyperparameter tuning
   learning_rate: !!float 2e-4
   gradient_accumulation_steps: !!int 1

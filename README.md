@@ -205,7 +205,7 @@ We provide a CLI:
 ```
  Usage: cotorra [OPTIONS] COMMAND [ARGS]...
 
- Configurable training for generative event models (v26.3.1)
+ Configurable training for generative event models (vXX.X.X)
 
 ╭─ Options ───────────────────────────────────────────────────────────────────╮
 │ --install-completion          Install completion for the current shell.     │

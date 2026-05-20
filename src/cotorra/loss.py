@@ -31,11 +31,6 @@ class Loss:
             )
 
         if "quantile_token_loss" in self.cfg:
-            if self.tkzr_cfg.cfg.fused:
-                self.logger.warn(
-                    "Quantile token loss is still experimental for fused tokenizers."
-                )
-
             self.q_type = np.array(
                 [
                     v.endswith(tuple(f"Q{i}" for i in range(self.tkzr_cfg.cfg.n_bins)))
