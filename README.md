@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
+
 # Cotorra: Configurable training
 
 > 🦜 the wild parakeet of the south side
