@@ -1,4 +1,5 @@
 [![DOI](https://zenodo.org/badge/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
+[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
 
 # Cotorra: Configurable training
 
