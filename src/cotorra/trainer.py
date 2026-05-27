@@ -22,6 +22,21 @@ from cotorra.logger import Logger
 from cotorra.loss import Loss
 
 
+class TrainerWithCustomLoss(t_Trainer):
+    def __init__(self, compute_loss_func=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.compute_loss_func = compute_loss_func
+
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        if self.compute_loss_func is not None:
+            labels = inputs.get("labels")
+            outputs = model(**inputs)
+            loss = self.compute_loss_func(outputs, labels)
+            return (loss, outputs) if return_outputs else loss
+        else:
+            return super().compute_loss(model, inputs, return_outputs, **kwargs)
+
+
 class Trainer:
     """the meds format dumps training (train), validation (tuning), and test (held_out)
     data into the same file;
@@ -100,8 +115,8 @@ class Trainer:
             p_ids += t.arange(p_ids.shape[-1], device=p_ids.device, dtype=p_ids.dtype)
             return {"input_ids": input_ids, "labels": input_ids, "position_ids": p_ids}
 
-    def _make_trainer(self) -> t_Trainer:
-        return t_Trainer(
+    def _make_trainer(self) -> TrainerWithCustomLoss:
+        return TrainerWithCustomLoss(
             model_init=self.model_init,
             data_collator=self.collate_fn,
             compute_loss_func=self.loss,

@@ -126,6 +126,7 @@ class Extractor:
                     lambda batch: self.extract_final(batch, all_times=all_times),
                     batched=True,
                     batch_size=self.cfg.get("extract", {}).get("batch_size", 8),
+                    load_from_cache_file=False,  # disable caching
                 ).to_parquet(
                     self.processed_data_home / f"features{a}-{split}{index}.parquet"
                 )

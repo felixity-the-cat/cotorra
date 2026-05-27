@@ -1,4 +1,11 @@
 [project]
+    authors = [
+        { name = "Michael C. Burkhart", email = "burkh4rt@uchicago.edu" },
+        { name = "Luke Solo", email = "lsolo@uchicago.edu" },
+        { name = "Inhyeok Lee", email = "ihlee@uchicago.edu" },
+        { name = "S'Khaja Charles", email = "skhaja@uchicago.edu" },
+        { name = "Brett K. Beaulieu-Jones", email = "beaulieujones@uchicago.edu" },
+    ]
     classifiers = [
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Science/Research",
@@ -35,7 +42,7 @@
     name = "cotorra"
     readme = { file = "README.md", content-type = "text/markdown" }
     requires-python = ">=3.11"
-    version = "26.2.0"
+    version = "26.4.0"
 
     [project.scripts]
         cotorra = "cotorra.cli:main"
@@ -44,11 +51,15 @@
         Repository = "https://github.com/bbj-lab/cotorra"
 
     [project.optional-dependencies]
-        dev = [ "ruff>=0.15.4" ]
+        dev = [ "pip", "ruff" ]
         gen = [
             "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
             "sglang",
         ]
+
+[build-system]
+    build-backend = "setuptools.build_meta"
+    requires      = [ "setuptools", "wheel" ]
 
 [tool.ruff]
     extend-exclude = [ "*.md" ]
@@ -66,8 +77,5 @@
         select = [ "E", "F", "I" ]
 
         [tool.ruff.lint.isort]
-            known-first-party = [ "cotorra" ]
-
-[build-system]
-    build-backend = "setuptools.build_meta"
-    requires      = [ "setuptools>=69", "wheel" ]
+            known-first-party       = [ "cocoa", "cotorra", "coreopsis" ]
+            split-on-trailing-comma = false

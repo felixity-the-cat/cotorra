@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
+
 # Cotorra: Configurable training
 
 > 🦜 the wild parakeet of the south side
@@ -312,20 +314,15 @@ with commands:
 
 <!--
 
+Run in tmux:
 ```
 tmux new -s co || tmux a -t co
 ```
 
-Send to randi:
-```
-rsync -avht \
- --delete \
- --exclude "output/" \
- --exclude "wandb/" \
- --exclude ".venv/" \
- --exclude ".idea/" \
- ~/Documents/chicago/cotorra \
- randi:/gpfs/data/bbj-lab/users/burkh4rt
+Format:
+```sh
+ruff format .
+ruff check . --fix
 ```
 
 Send to bbj-lab1:
