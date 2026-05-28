@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
+[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
+
 # Cotorra: Configurable training
 
 > 🦜 the wild parakeet of the south side
@@ -20,7 +23,9 @@ margin: 0 auto; -webkit-mask-image: radial-gradient(
 This repo provides a configurable trainer for generative event models on
 tokenized timelines. _Cotorra_ is a Spanish term for a small-to-medium sized
 parrot, particularly the Monk parakeet. Monk parakeets were introduced to the
-south side of Chicago, where they have flourished. [^1]
+south side of Chicago, where they have flourished. [^1] It benefits from previous
+experience training foundation models on tokenized electronic health records.
+[^2] [^3] [^4] [^5]
 
 ## Installation
 
@@ -329,6 +334,29 @@ with commands:
     L. Gersony, "The Quiet Victory of Chicago’s Monk Parakeets," _The Chicago
     Maroon_, 23 January 2022,
     https://chicagomaroon.com/28830/grey-city/quiet-protest-chicagos-monk-parakeets/
+
+[^2]:
+    M. Burkhart, B. Ramadan, Z. Liao, K. Chhikara, J. Rojas, W. Parker, & B.
+    Beaulieu-Jones, Foundation models for electronic health records:
+    representation dynamics and transferability,
+    [arXiv:2504.10422](https://doi.org/10.48550/arXiv.2504.10422)
+
+[^3]:
+    M. Burkhart, B. Ramadan, L. Solo, W. Parker, & B. Beaulieu-Jones,
+    [Quantifying surprise in clinical care: Detecting highly informative events in electronic health records with foundation models](https://doi.org/10.1142/9789819824755_0013),
+    Pacific Symposium on Biocomputing 31 (2026), 173–188
+
+[^4]:
+    L. Solo, M. McDermott, W. Parker, B. Ramadan, M. Burkhart, & B.
+    Beaulieu-Jones, Efficient generative prediction for EHR foundation models:
+    the SCOPE and REACH estimators,
+    [arXiv:2602.03730](https://doi.org/10.48550/arXiv.2602.03730)
+
+[^5]:
+    I. Lee, L. Solo, M. Burkhart, B. Ramadan, W. Parker, & B. Beaulieu-Jones,
+    Representation before training: a fixed-budget benchmark for generative
+    medical event models,
+    [arXiv:2604.16775](https://doi.org/10.48550/arXiv.2604.16775)
 
 <!--
 
