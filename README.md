@@ -1,9 +1,9 @@
 [![DOI](img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
 [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
 
-# Cotorra: Configurable training
+# Cotorra: a configurable trainer
 
-> 🦜 the wild parakeet of the south side
+> 🦜 the wild parakeet of Chicago's south side
 
 <img src="img/cotorra.png" width="400" style="display: block;
 margin: 0 auto; -webkit-mask-image: radial-gradient(
@@ -31,7 +31,7 @@ experience training foundation models on tokenized electronic health records.
 You can download and install this package as follows:
 
 ```sh
-git clone git@github.com:bbj-lab/cotorra.git
+git clone --branch config-refactor git@github.com:bbj-lab/cotorra.git
 cd cotorra
 python -m venv .venv
 . .venv/bin/activate

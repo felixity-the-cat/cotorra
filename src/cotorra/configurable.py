@@ -35,7 +35,7 @@ class Configurable:
             else OmegaConf.create()
         )
         self.cfg = OmegaConf.merge(
-            self.default if self.config_file is not None else self.passed,
+            self.passed if self.config_file is not None else self.default,
             {k: v for k, v in kwargs.items() if v is not None},
         )
 
