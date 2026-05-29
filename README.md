@@ -1,12 +1,11 @@
-[![DOI](https://zenodo.org/badge/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
+[![DOI](img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
 [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
 
 # Cotorra: Configurable training
 
 > 🦜 the wild parakeet of the south side
 
-<img src="img/monk-parakeets-calumet-park.jpeg" alt="Monk parakeets as seen in
-Calumet Park, Chicago, 12 November 2024" width="400" style="display: block;
+<img src="img/cotorra.png" width="400" style="display: block;
 margin: 0 auto; -webkit-mask-image: radial-gradient(
     ellipse at center,
     rgba(0,0,0,1) 50%,
