@@ -22,11 +22,13 @@ class RepBasedScorer(Configurable):
         self,
         scoring_cfg: pathlib.Path | str = None,
         processed_data_home: pathlib.Path | str = None,
+        model_home: pathlib.Path | str = None,
         **kwargs,
     ):
         super().__init__(scoring_cfg, **kwargs)
-        self.processed_data_home = (
-            pathlib.Path(processed_data_home).expanduser().resolve()
+        self.processed_data_home, self.model_home = map(
+            lambda x: pathlib.Path(x).expanduser().resolve(),
+            (processed_data_home, model_home),
         )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
 
@@ -35,7 +37,10 @@ class RepBasedScorer(Configurable):
         try:
             self.features = {
                 s: np.vstack(
-                    pl.scan_parquet(self.processed_data_home / f"features-{s}.parquet")
+                    pl.scan_parquet(
+                        self.processed_data_home
+                        / f"features-{s}-{self.model_home.name}.parquet"
+                    )
                     .select("features")
                     .collect()
                     .to_series()
@@ -46,8 +51,8 @@ class RepBasedScorer(Configurable):
         except FileNotFoundError as e:
             raise FileNotFoundError(
                 "Expected extracted features at: "
-                f"{self.processed_data_home / 'features-<split>.parquet'}, "
-                "but not found."
+                f"{self.processed_data_home / 'features-<split>-<model_name>.parquet'},"
+                " but not found."
                 " Please run `cotorra extract` first."
             ) from e
 
@@ -96,7 +101,8 @@ class RepBasedScorer(Configurable):
         (
             df_res := self.labels["held_out"].with_columns(pl.from_dict(self.score()))
         ).sink_parquet(
-            self.processed_data_home / f"scores-rep-based-{self.cfg.run_name}.parquet"
+            self.processed_data_home
+            / f"scores-rep-based-{self.model_home.name}.parquet"
         )
 
         if verbose:

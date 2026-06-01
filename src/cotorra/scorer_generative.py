@@ -29,13 +29,14 @@ class GenerativeScorer(Configurable):
         **kwargs,
     ):
         super().__init__(scoring_cfg, **kwargs)
-        self.processed_data_home = (
-            pathlib.Path(processed_data_home).expanduser().resolve()
+        self.processed_data_home, self.model_home = map(
+            lambda x: pathlib.Path(x).expanduser().resolve(),
+            (processed_data_home, model_home),
         )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
 
         self.engine = create_engine(
-            model_path=str(pathlib.Path(model_home).expanduser().resolve()),
+            model_path=str(self.model_home),
             max_len=self.cfg.score.max_len,
             use_time_horizon="max_time" in self.cfg.score,  # use if max_time configured
         )
@@ -99,7 +100,8 @@ class GenerativeScorer(Configurable):
     def save_all(self, verbose: bool = False):
         res = asyncio.run(self.score())
         (df_res := self.ds.with_columns(pl.from_dict(res))).sink_parquet(
-            self.processed_data_home / f"scores-generative-{self.cfg.run_name}.parquet"
+            self.processed_data_home
+            / f"scores-generative-{self.model_home.name}.parquet"
         )
 
         if verbose:

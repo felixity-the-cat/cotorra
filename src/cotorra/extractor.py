@@ -30,8 +30,9 @@ class Extractor(Configurable):
         **kwargs,
     ):
         super().__init__(extraction_cfg, **kwargs)
-        self.processed_data_home = (
-            pathlib.Path(processed_data_home).expanduser().resolve()
+        self.processed_data_home, self.model_home = map(
+            lambda x: pathlib.Path(x).expanduser().resolve(),
+            (processed_data_home, model_home),
         )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
         self.loader = Loader(extraction_cfg, self.processed_data_home)
@@ -42,9 +43,7 @@ class Extractor(Configurable):
             if t.backends.mps.is_available()
             else "cpu"
         )
-        self.model = AutoModelForCausalLM.from_pretrained(
-            pathlib.Path(model_home).expanduser().resolve()
-        )
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_home)
         self.model.to(self.device).eval()
         if not isinstance(self.model.config.pad_token_id, int):
             self.model.config.pad_token_id = self.model.config.eos_token_id
@@ -116,7 +115,8 @@ class Extractor(Configurable):
                     batch_size=self.cfg.get("extract", {}).get("batch_size", 8),
                     load_from_cache_file=False,  # disable caching
                 ).to_parquet(
-                    self.processed_data_home / f"features{a}-{split}{index}.parquet"
+                    self.processed_data_home
+                    / f"features{a}-{split}{index}-{self.model_home.name}.parquet"
                 )
 
 
