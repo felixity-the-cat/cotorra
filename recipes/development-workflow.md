@@ -35,9 +35,8 @@ esac
 
    ```sh
    cotorra tune \
-       --processed-data-home ../cocoa/processed/dev \
+       --processed-data-home ./processed/dev \
        --output-home ./output/dev/ \
-       --model-config ./config/model/llama-32-lite.yaml \
        --verbose
    ```
 
@@ -45,8 +44,8 @@ esac
 
    ```sh
    cotorra generative-score \
-       --processed-data-home ../cocoa/processed/dev \
-       --output-home ./output/dev/ \
+       --processed-data-home ./processed/dev \
+       --model-home ./output/dev/mdl-cotorra-tuning \
        --verbose
    ```
 
@@ -55,8 +54,8 @@ esac
 
    ```sh
    cotorra extract \
-       --processed-data-home ../cocoa/processed/dev \
-       --output-home ./output/dev/
+       --processed-data-home ../processed/dev \
+       --model-home ./output/dev/mdl-cotorra-tuning
 
    cotorra rep-based-score \
        --processed-data-home ../cocoa/processed/dev \

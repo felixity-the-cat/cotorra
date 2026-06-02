@@ -163,9 +163,7 @@ def extract(
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Extraction completed in {t1 - t0:.2f}s.")
         for split in extractor.loader.splits:
-            a = "-all" if all_times else ""
-            output = extractor.processed_data_home / f"features{a}-{split}.parquet"
-            print(f" Output: {output}")
+            print(f" Output in: {extractor.processed_data_home}")
 
 
 @app.command()
@@ -210,11 +208,7 @@ def generative_score(
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Generative scoring completed in {t1 - t0:.2f}s.")
-        out_path = (
-            scorer.processed_data_home
-            / f"scores-generative-{scorer.cfg.run_name}.parquet"
-        )
-        print(f"  Scores: [cyan]{out_path}[/cyan]")
+        print(f"  Scores: [cyan]{scorer.output_home}[/cyan]")
 
 
 @app.command()
@@ -231,6 +225,12 @@ def rep_based_score(
         str,
         typer.Option("--processed-data-home", "-p", help="Processed data directory"),
     ] = ...,
+    model_home: Annotated[
+        str,
+        typer.Option(
+            "--model-home", "-m", help="Directory of the trained model to score with"
+        ),
+    ] = ...,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -246,16 +246,14 @@ def rep_based_score(
     with console.status("[bold green]Rep-based scoring on held-out data..."):
         t0 = time.perf_counter()
         scorer = RepBasedScorer(
-            scoring_cfg=scoring_config, processed_data_home=processed_data_home
+            scoring_cfg=scoring_config,
+            processed_data_home=processed_data_home,
+            model_home=model_home,
         )
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Rep-based scoring completed in {t1 - t0:.2f}s.")
-        out_path = (
-            scorer.processed_data_home
-            / f"scores-rep-based-{scorer.cfg.run_name}.parquet"
-        )
-        print(f"  Scores: [cyan]{out_path}[/cyan]")
+        print(f"  Scores: [cyan]{scorer.output_home}[/cyan]")
 
 
 def main():

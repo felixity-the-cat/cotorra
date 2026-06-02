@@ -45,6 +45,10 @@ class GenerativeScorer(Configurable):
             self.processed_data_home / "held_out_for_inference.parquet"
         )
         self.tokens_past = self.ds.select("tokens_past").collect().to_series().to_list()
+        self.output_home = (
+            self.processed_data_home
+            / f"scores-generative-{self.model_home.name}.parquet"
+        )
 
     async def sco_re(self, target_token: str, to_score_tokens: list[int]):
         tid = self.tkzr_cfg.lookup[target_token]
@@ -100,8 +104,7 @@ class GenerativeScorer(Configurable):
     def save_all(self, verbose: bool = False):
         res = asyncio.run(self.score())
         (df_res := self.ds.with_columns(pl.from_dict(res))).sink_parquet(
-            self.processed_data_home
-            / f"scores-generative-{self.model_home.name}.parquet"
+            self.output_home
         )
 
         if verbose:

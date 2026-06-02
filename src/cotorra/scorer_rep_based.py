@@ -30,6 +30,10 @@ class RepBasedScorer(Configurable):
             lambda x: pathlib.Path(x).expanduser().resolve(),
             (processed_data_home, model_home),
         )
+        self.output_home = (
+            self.processed_data_home
+            / f"scores-rep-based-{self.model_home.name}.parquet"
+        )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
 
         self.splits = ("train", "tuning", "held_out")
@@ -100,10 +104,7 @@ class RepBasedScorer(Configurable):
     def save_all(self, verbose: bool = False):
         (
             df_res := self.labels["held_out"].with_columns(pl.from_dict(self.score()))
-        ).sink_parquet(
-            self.processed_data_home
-            / f"scores-rep-based-{self.model_home.name}.parquet"
-        )
+        ).sink_parquet(self.output_home)
 
         if verbose:
             self.logger.summarize_preds(df_res, self.cfg.score.target_tokens)

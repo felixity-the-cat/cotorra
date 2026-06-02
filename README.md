@@ -324,6 +324,9 @@ with commands:
   │    --scoring-config       -s      PATH  Scoring configuration file          │
   │                                         (overrides default)                 │
   │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
+  │ *  --model-home           -m      TEXT  Directory of the trained model to   │
+  │                                         score with                          │
+  │                                         [required]                          │
   │    --verbose              -v            Verbose logging for collate         │
   │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
