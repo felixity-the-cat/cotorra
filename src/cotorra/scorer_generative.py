@@ -26,6 +26,7 @@ class GenerativeScorer(Configurable):
         scoring_cfg: pathlib.Path | str = None,
         processed_data_home: pathlib.Path | str = None,
         model_home: pathlib.Path | str = None,
+        output_home: pathlib.Path | str = None,
         **kwargs,
     ):
         super().__init__(scoring_cfg, **kwargs)
@@ -33,6 +34,11 @@ class GenerativeScorer(Configurable):
             lambda x: pathlib.Path(x).expanduser().resolve(),
             (processed_data_home, model_home),
         )
+        self.output_home = (
+            pathlib.Path(output_home).expanduser().resolve()
+            if output_home is not None
+            else self.processed_data_home
+        ) / f"scores-generative-{self.model_home.name}.parquet"
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
 
         self.engine = create_engine(
@@ -45,10 +51,6 @@ class GenerativeScorer(Configurable):
             self.processed_data_home / "held_out_for_inference.parquet"
         )
         self.tokens_past = self.ds.select("tokens_past").collect().to_series().to_list()
-        self.output_home = (
-            self.processed_data_home
-            / f"scores-generative-{self.model_home.name}.parquet"
-        )
 
     async def sco_re(self, target_token: str, to_score_tokens: list[int]):
         tid = self.tkzr_cfg.lookup[target_token]

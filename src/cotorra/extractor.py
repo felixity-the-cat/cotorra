@@ -27,12 +27,18 @@ class Extractor(Configurable):
         extraction_cfg: pathlib.Path | str = None,
         processed_data_home: pathlib.Path | str = None,
         model_home: pathlib.Path | str = None,
+        output_home: pathlib.Path | str = None,
         **kwargs,
     ):
         super().__init__(extraction_cfg, **kwargs)
         self.processed_data_home, self.model_home = map(
             lambda x: pathlib.Path(x).expanduser().resolve(),
             (processed_data_home, model_home),
+        )
+        self.output_home = (
+            pathlib.Path(output_home).expanduser().resolve()
+            if output_home is not None
+            else self.processed_data_home
         )
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
         self.loader = Loader(extraction_cfg, self.processed_data_home)
@@ -115,7 +121,7 @@ class Extractor(Configurable):
                     batch_size=self.cfg.get("extract", {}).get("batch_size", 8),
                     load_from_cache_file=False,  # disable caching
                 ).to_parquet(
-                    self.processed_data_home
+                    self.output_home
                     / f"features{a}-{split}{index}-{self.model_home.name}.parquet"
                 )
 

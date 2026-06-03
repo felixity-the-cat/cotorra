@@ -287,6 +287,8 @@ with commands:
   │ *  --model-home           -m      TEXT  Directory of the trained model to   │
   │                                         score with                          │
   │                                         [required]                          │
+  │    --output-home          -o      TEXT  Output directory for scores,        │
+  │                                         defaults to processed-data-home     │
   │    --verbose              -v            Verbose logging for collate         │
   │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
@@ -306,6 +308,9 @@ with commands:
   │ *  --model-home           -m      TEXT  Directory of the trained model to   │
   │                                         extract from                        │
   │                                         [required]                          │
+  │    --output-home          -o      TEXT  Output directory for extracted      │
+  │                                         features, defaults to               │
+  │                                         processed-data-home                 │
   │    --all-times            -a            Extract features for all time steps │
   │                                         (instead of just the final one)?    │
   │    --help                               Show this message and exit.         │
@@ -327,6 +332,8 @@ with commands:
   │ *  --model-home           -m      TEXT  Directory of the trained model to   │
   │                                         score with                          │
   │                                         [required]                          │
+  │    --output-home          -o      TEXT  Output directory for scores,        │
+  │                                         defaults to processed-data-home     │
   │    --verbose              -v            Verbose logging for collate         │
   │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯

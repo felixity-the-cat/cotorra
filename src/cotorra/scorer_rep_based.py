@@ -23,6 +23,7 @@ class RepBasedScorer(Configurable):
         scoring_cfg: pathlib.Path | str = None,
         processed_data_home: pathlib.Path | str = None,
         model_home: pathlib.Path | str = None,
+        output_home: pathlib.Path | str = None,
         **kwargs,
     ):
         super().__init__(scoring_cfg, **kwargs)
@@ -31,9 +32,10 @@ class RepBasedScorer(Configurable):
             (processed_data_home, model_home),
         )
         self.output_home = (
-            self.processed_data_home
-            / f"scores-rep-based-{self.model_home.name}.parquet"
-        )
+            pathlib.Path(output_home).expanduser().resolve()
+            if output_home is not None
+            else self.processed_data_home
+        ) / f"scores-rep-based-{self.model_home.name}.parquet"
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
 
         self.splits = ("train", "tuning", "held_out")

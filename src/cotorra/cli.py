@@ -139,6 +139,14 @@ def extract(
             "--model-home", "-m", help="Directory of the trained model to extract from"
         ),
     ] = ...,
+    output_home: Annotated[
+        Optional[str],
+        typer.Option(
+            "--output-home",
+            "-o",
+            help="Output directory for extracted features, defaults to processed-data-home",
+        ),
+    ] = None,
     all_times: Annotated[
         bool,
         typer.Option(
@@ -158,6 +166,7 @@ def extract(
             extraction_cfg=extraction_config,
             processed_data_home=processed_data_home,
             model_home=model_home,
+            output_home=output_home,
         )
         extractor.extract(all_times=all_times)
         t1 = time.perf_counter()
@@ -186,6 +195,14 @@ def generative_score(
             "--model-home", "-m", help="Directory of the trained model to score with"
         ),
     ] = ...,
+    output_home: Annotated[
+        Optional[str],
+        typer.Option(
+            "--output-home",
+            "-o",
+            help="Output directory for scores, defaults to processed-data-home",
+        ),
+    ] = None,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -204,6 +221,7 @@ def generative_score(
             scoring_cfg=scoring_config,
             processed_data_home=processed_data_home,
             model_home=model_home,
+            output_home=output_home,
         )
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
@@ -231,6 +249,14 @@ def rep_based_score(
             "--model-home", "-m", help="Directory of the trained model to score with"
         ),
     ] = ...,
+    output_home: Annotated[
+        Optional[str],
+        typer.Option(
+            "--output-home",
+            "-o",
+            help="Output directory for scores, defaults to processed-data-home",
+        ),
+    ] = None,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -249,6 +275,7 @@ def rep_based_score(
             scoring_cfg=scoring_config,
             processed_data_home=processed_data_home,
             model_home=model_home,
+            output_home=output_home,
         )
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
