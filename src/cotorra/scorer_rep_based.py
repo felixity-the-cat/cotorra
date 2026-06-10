@@ -106,7 +106,9 @@ class RepBasedScorer(Configurable):
     def save_all(self, verbose: bool = False):
         (
             df_res := self.labels["held_out"].with_columns(pl.from_dict(self.score()))
-        ).sink_parquet(self.output_home)
+        ).sink_parquet(
+            self.output_home / f"scores-rep-based-{self.cfg.run_name}.parquet"
+        )
 
         if verbose:
             self.logger.summarize_preds(df_res, self.cfg.score.target_tokens)

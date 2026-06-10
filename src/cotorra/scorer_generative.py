@@ -77,6 +77,7 @@ class GenerativeScorer(Configurable):
             to_score = (
                 self.ds.select(~pl.col(f"{tt}_past")).collect().to_series().to_numpy()
             )
+            to_score_idx = np.flatnonzero(to_score)
             to_score_tokens = [
                 x[
                     -self.cfg.score.max_len + 100 :
@@ -92,13 +93,14 @@ class GenerativeScorer(Configurable):
             ):
                 idx, tks = zip(*idx_tks)
                 _, results = await self.sco_re(tt, tks)
-                res[f"{tt}_mc_score"][to_score][np.array(idx).ravel()] = np.array(
+                rows = to_score_idx[np.array(idx).ravel()]
+                res[f"{tt}_mc_score"][rows] = np.array(
                     [np.mean(r.m0_samples) for r in results]
                 )
-                res[f"{tt}_scope_score"][to_score][np.array(idx).ravel()] = np.array(
+                res[f"{tt}_scope_score"][rows] = np.array(
                     [np.mean(r.m1_samples) for r in results]
                 )
-                res[f"{tt}_reach_score"][to_score][np.array(idx).ravel()] = np.array(
+                res[f"{tt}_reach_score"][rows] = np.array(
                     [np.mean(r.m2_samples) for r in results]
                 )
         return res
