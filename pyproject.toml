@@ -42,7 +42,7 @@
     name = "cotorra"
     readme = { file = "README.md", content-type = "text/markdown" }
     requires-python = ">=3.11"
-    version = "26.4.0"
+    version = "26.5.0"
 
     [project.scripts]
         cotorra = "cotorra.cli:main"
@@ -51,6 +51,7 @@
         Repository = "https://github.com/bbj-lab/cotorra"
 
     [project.optional-dependencies]
+        all = [ "cotorra[dev,gen]" ]
         dev = [ "pip", "ruff" ]
         gen = [
             "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
