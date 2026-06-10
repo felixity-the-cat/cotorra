@@ -5,7 +5,6 @@ logging
 """
 
 import logging
-import shutil
 
 import numpy as np
 import polars as pl
@@ -37,11 +36,7 @@ class Logger(logging.Logger):
             fmt="🦜 [%(asctime)s] %(message)s", datefmt="%H:%M:%S%Z"
         )
         ch = RichHandler(
-            show_path=False,
-            show_time=False,
-            console=Console(
-                width=min(shutil.get_terminal_size().columns, 200), soft_wrap=True
-            ),
+            show_path=False, show_time=False, console=Console(width=200, soft_wrap=True)
         )
         ch.setLevel(logging.INFO)
         ch.setFormatter(formatter)

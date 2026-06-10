@@ -100,6 +100,22 @@ subject_id's and their corresponding split assignment (with splits: `train`,
 └────────────┴──────────┘
 ```
 
+For extraction and scoring workflows, we also need split-specific inference
+tables in the same `processed_data_home` directory:
+
+- `train_for_inference.parquet`
+- `tuning_for_inference.parquet`
+- `held_out_for_inference.parquet`
+
+These tables are expected to include at least:
+
+- `tokens_past` (the model context used for extraction/scoring)
+- `s_elapsed_past` (if using `time_based_rope`)
+- token-specific label columns such as `<TOKEN>_past` and `<TOKEN>_future` used
+  by generative and representation-based scoring.
+
+The `cocoa winnow` command provides these.
+
 <!-- prettier-ignore-start -->
 > [!TIP]
 > For getting your data to this point, check out our configurable

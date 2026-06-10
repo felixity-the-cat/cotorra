@@ -54,11 +54,12 @@ esac
 
    ```sh
    cotorra extract \
-       --processed-data-home ../processed/dev \
+       --processed-data-home ./processed/dev \
        --model-home ./output/dev/mdl-cotorra-tuning
 
    cotorra rep-based-score \
-       --processed-data-home ../cocoa/processed/dev \
+       --processed-data-home ./processed/dev \
+       --model-home ./output/dev/mdl-cotorra-tuning \
        --verbose
    ```
 
