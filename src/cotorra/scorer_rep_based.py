@@ -35,7 +35,9 @@ class RepBasedScorer:
 
         self.features = {
             s: np.vstack(
-                pl.scan_parquet(self.processed_data_home / f"features-{s}.parquet")
+                # glob also matches sharded output, e.g.
+                # features-train-00000-of-00003.parquet
+                pl.scan_parquet(self.processed_data_home / f"features-{s}*.parquet")
                 .select("features")
                 .collect()
                 .to_series()
