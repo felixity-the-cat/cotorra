@@ -82,7 +82,7 @@ class Trainer:
         os.environ["WANDB_PROJECT"] = self.cfg.get("wandb", {}).get(
             "project", "cotorra"
         )
-        os.environ["WANDB_RUN_NAME"] = self.cfg.get("wandb", {}).get(
+        os.environ["WANDB_NAME"] = self.cfg.get("wandb", {}).get(
             "run_name", "cotorra"
         )
 
