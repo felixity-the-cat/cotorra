@@ -1,10 +1,11 @@
 [![DOI](img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
 [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
 
-# Cotorra: Configurable training
+# Cotorra: a configurable trainer
 
-> 🦜 the wild parakeet of the south side
+> 🦜 the wild parakeet of Chicago's south side
 
+<p align="center">
 <img src="img/cotorra.png" width="400" style="display: block;
 margin: 0 auto; -webkit-mask-image: radial-gradient(
     ellipse at center,
@@ -16,6 +17,7 @@ margin: 0 auto; -webkit-mask-image: radial-gradient(
     rgba(0,0,0,1) 50%,
     rgba(0,0,0,0) 100%
   );"/>
+</p>
 
 ## About
 
@@ -31,7 +33,7 @@ experience training foundation models on tokenized electronic health records.
 You can download and install this package as follows:
 
 ```sh
-git clone git@github.com:bbj-lab/cotorra.git
+git clone --branch config-refactor git@github.com:bbj-lab/cotorra.git
 cd cotorra
 python -m venv .venv
 . .venv/bin/activate
@@ -270,6 +272,8 @@ with commands:
   │ *  --model-home           -m      TEXT  Directory of the trained model to   │
   │                                         score with                          │
   │                                         [required]                          │
+  │    --output-home          -o      TEXT  Output directory for scores,        │
+  │                                         defaults to processed-data-home     │
   │    --verbose              -v            Verbose logging for collate         │
   │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
@@ -289,6 +293,9 @@ with commands:
   │ *  --model-home           -m      TEXT  Directory of the trained model to   │
   │                                         extract from                        │
   │                                         [required]                          │
+  │    --output-home          -o      TEXT  Output directory for extracted      │
+  │                                         features, defaults to               │
+  │                                         processed-data-home                 │
   │    --all-times            -a            Extract features for all time steps │
   │                                         (instead of just the final one)?    │
   │    --help                               Show this message and exit.         │
@@ -307,6 +314,11 @@ with commands:
   │    --scoring-config       -s      PATH  Scoring configuration file          │
   │                                         (overrides default)                 │
   │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
+  │ *  --model-home           -m      TEXT  Directory of the trained model to   │
+  │                                         score with                          │
+  │                                         [required]                          │
+  │    --output-home          -o      TEXT  Output directory for scores,        │
+  │                                         defaults to processed-data-home     │
   │    --verbose              -v            Verbose logging for collate         │
   │    --help                               Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯

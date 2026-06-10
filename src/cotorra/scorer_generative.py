@@ -14,40 +14,35 @@ import tqdm
 from omegaconf import OmegaConf
 from quick_sco_re import GenerationConfig, create_engine, generate_and_score
 
-from cotorra.logger import Logger
+from cotorra.configurable import Configurable
 from cotorra.util import batched
 
 
-class GenerativeScorer:
+class GenerativeScorer(Configurable):
+    default_file = "scoring.yaml"
+
     def __init__(
         self,
-        main_cfg: pathlib.Path | str = None,
+        scoring_cfg: pathlib.Path | str = None,
+        processed_data_home: pathlib.Path | str = None,
         model_home: pathlib.Path | str = None,
+        output_home: pathlib.Path | str = None,
         **kwargs,
     ):
-        parsed = OmegaConf.load(
-            pathlib.Path(main_cfg if main_cfg is not None else "./config/main.yaml")
-            .expanduser()
-            .resolve()
-        )
-        self.cfg = OmegaConf.merge(
-            parsed, OmegaConf.create({k: v for k, v in kwargs.items() if v is not None})
-        )
-        self.processed_data_home = (
-            pathlib.Path(self.cfg.processed_data_home).expanduser().resolve()
+        super().__init__(scoring_cfg, **kwargs)
+        self.processed_data_home, self.model_home = map(
+            lambda x: pathlib.Path(x).expanduser().resolve(),
+            (processed_data_home, model_home),
         )
         self.output_home = (
-            pathlib.Path(self.cfg.get("output_home", self.cfg.get("output_dir")))
-            .expanduser()
-            .resolve()
-        )
+            pathlib.Path(output_home).expanduser().resolve()
+            if output_home is not None
+            else self.processed_data_home
+        ) / f"scores-generative-{self.model_home.name}.parquet"
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
-        self.logger = Logger()
 
         self.engine = create_engine(
-            model_path=str(pathlib.Path(model_home).expanduser().resolve())
-            if model_home is not None
-            else str(self.output_home / f"mdl-{self.cfg.run_name}"),
+            model_path=str(self.model_home),
             max_len=self.cfg.score.max_len,
             use_time_horizon="max_time" in self.cfg.score,  # use if max_time configured
         )
@@ -82,6 +77,7 @@ class GenerativeScorer:
             to_score = (
                 self.ds.select(~pl.col(f"{tt}_past")).collect().to_series().to_numpy()
             )
+            to_score_idx = np.flatnonzero(to_score)
             to_score_tokens = [
                 x[
                     -self.cfg.score.max_len + 100 :
@@ -97,13 +93,14 @@ class GenerativeScorer:
             ):
                 idx, tks = zip(*idx_tks)
                 _, results = await self.sco_re(tt, tks)
-                res[f"{tt}_mc_score"][to_score][np.array(idx).ravel()] = np.array(
+                rows = to_score_idx[np.array(idx).ravel()]
+                res[f"{tt}_mc_score"][rows] = np.array(
                     [np.mean(r.m0_samples) for r in results]
                 )
-                res[f"{tt}_scope_score"][to_score][np.array(idx).ravel()] = np.array(
+                res[f"{tt}_scope_score"][rows] = np.array(
                     [np.mean(r.m1_samples) for r in results]
                 )
-                res[f"{tt}_reach_score"][to_score][np.array(idx).ravel()] = np.array(
+                res[f"{tt}_reach_score"][rows] = np.array(
                     [np.mean(r.m2_samples) for r in results]
                 )
         return res
@@ -111,7 +108,7 @@ class GenerativeScorer:
     def save_all(self, verbose: bool = False):
         res = asyncio.run(self.score())
         (df_res := self.ds.with_columns(pl.from_dict(res))).sink_parquet(
-            self.processed_data_home / f"scores-generative-{self.cfg.run_name}.parquet"
+            self.output_home
         )
 
         if verbose:

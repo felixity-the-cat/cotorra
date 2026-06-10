@@ -11,16 +11,23 @@ import numpy as np
 import polars as pl
 from omegaconf import OmegaConf
 
+from cotorra.configurable import Configurable
 from cotorra.util import batched_iter
 
 
-class Loader:
+class Loader(Configurable):
     """the meds format dumps training (train), validation (tuning), and test (held_out)
     data into the same file;
     we need to start by fishing out training and validation data"""
 
-    def __init__(self, cfg, processed_data_home: pathlib.Path):
-        self.cfg = cfg
+    default_file = "training.yaml"
+
+    def __init__(
+        self,
+        training_cfg: pathlib.Path | str = None,
+        processed_data_home: pathlib.Path = None,
+    ):
+        super().__init__(training_cfg)
         self.rng = np.random.default_rng(42)
         self.processed_data_home = processed_data_home
         self.tokenizer_info = OmegaConf.load(
