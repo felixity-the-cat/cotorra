@@ -226,7 +226,7 @@ def generative_score(
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Generative scoring completed in {t1 - t0:.2f}s.")
-        print(f"  Scores in: [cyan]{scorer.output_home}[/cyan]")
+        print(f"  Scores: [cyan]{scorer.output_home}[/cyan]")
 
 
 @app.command()
