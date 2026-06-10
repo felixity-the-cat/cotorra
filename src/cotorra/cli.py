@@ -217,8 +217,8 @@ def generative_score(
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Generative scoring completed in {t1 - t0:.2f}s.")
         out_path = (
-            scorer.output_home
-            / f"scores-generative-{scorer.cfg.wandb.run_name}.parquet"
+            scorer.processed_data_home
+            / f"scores-generative-{scorer.cfg.run_name}.parquet"
         )
         print(f"  Scores: [cyan]{out_path}[/cyan]")
 

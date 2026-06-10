@@ -90,7 +90,7 @@ class RepBasedScorer:
             df_res := self.labels["held_out"].with_columns(pl.from_dict(self.score()))
         ).sink_parquet(
             self.processed_data_home
-            / f"scores-rep-based-{self.cfg.wandb.run_name}.parquet"
+            / f"scores-rep-based-{self.cfg.run_name}.parquet"
         )
 
         if verbose:
