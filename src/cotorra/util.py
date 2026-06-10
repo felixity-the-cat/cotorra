@@ -59,7 +59,7 @@ def bootstrap_ci(
     Calculates a bootstrapped percentile interval for objectives `objs` as
     described in §13.3 of Efron & Tibshirani's "An Introduction to the Bootstrap"
     (Chapman & Hall, Boca Raton, 1993), ignoring variance due to model-fitting
-    (i.e. a 'liberal' bootstrap for variability in the test-set alone)
+    (i.e. this measures variability in the test-set alone);
     """
 
     def get_scores_i(rng_i: Generator) -> dict[str, float]:
