@@ -45,7 +45,7 @@ class RepBasedScorer(Configurable):
                 s: np.vstack(
                     pl.scan_parquet(
                         self.processed_data_home
-                        / f"features-{s}-{self.model_home.name}.parquet"
+                        / f"features-{s}*-{self.model_home.name}.parquet"
                     )
                     .select("features")
                     .collect()
