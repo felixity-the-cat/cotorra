@@ -23,12 +23,11 @@ class Configurable:
 
     def __init__(self, config_file: pathlib.Path | str = None, **kwargs):
         self.config_file = config_file
-        default_file = self.default_file
         self.cfg = OmegaConf.merge(
             OmegaConf.load(pathlib.Path(self.config_file).expanduser().resolve())
             if self.config_file is not None
-            else OmegaConf.load(resources.files("cotorra.config") / default_file)
-            if default_file is not None
+            else OmegaConf.load(resources.files("cotorra.config") / self.default_file)
+            if self.default_file is not None
             else OmegaConf.create(),
             {k: v for k, v in kwargs.items() if v is not None},
         )
