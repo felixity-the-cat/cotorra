@@ -12,37 +12,55 @@ import polars as pl
 import tqdm
 from omegaconf import OmegaConf
 
-from cotorra.logger import Logger
+from cotorra.configurable import Configurable
 
 
-class RepBasedScorer:
-    def __init__(self, main_cfg: pathlib.Path | str = None, **kwargs):
-        parsed = OmegaConf.load(
-            pathlib.Path(main_cfg if main_cfg is not None else "./config/main.yaml")
-            .expanduser()
-            .resolve()
+class RepBasedScorer(Configurable):
+    default_file = "scoring.yaml"
+
+    def __init__(
+        self,
+        scoring_cfg: pathlib.Path | str = None,
+        processed_data_home: pathlib.Path | str = None,
+        model_home: pathlib.Path | str = None,
+        output_home: pathlib.Path | str = None,
+        **kwargs,
+    ):
+        super().__init__(scoring_cfg, **kwargs)
+        self.processed_data_home, self.model_home = map(
+            lambda x: pathlib.Path(x).expanduser().resolve(),
+            (processed_data_home, model_home),
         )
-        self.cfg = OmegaConf.merge(
-            parsed, OmegaConf.create({k: v for k, v in kwargs.items() if v is not None})
-        )
-        self.processed_data_home = (
-            pathlib.Path(self.cfg.processed_data_home).expanduser().resolve()
-        )
+        self.output_home = (
+            pathlib.Path(output_home).expanduser().resolve()
+            if output_home is not None
+            else self.processed_data_home
+        ) / f"scores-rep-based-{self.model_home.name}.parquet"
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
-        self.logger = Logger()
 
         self.splits = ("train", "tuning", "held_out")
 
-        self.features = {
-            s: np.vstack(
-                pl.scan_parquet(self.processed_data_home / f"features-{s}.parquet")
-                .select("features")
-                .collect()
-                .to_series()
-                .to_list()
-            )
-            for s in self.splits
-        }
+        try:
+            self.features = {
+                s: np.vstack(
+                    pl.scan_parquet(
+                        self.processed_data_home
+                        / f"features-{s}-{self.model_home.name}.parquet"
+                    )
+                    .select("features")
+                    .collect()
+                    .to_series()
+                    .to_list()
+                )
+                for s in self.splits
+            }
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                "Expected extracted features at: "
+                f"{self.processed_data_home / 'features-<split>-<model_name>.parquet'},"
+                " but not found."
+                " Please run `cotorra extract` first."
+            ) from e
 
         self.labels = {
             s: pl.scan_parquet(self.processed_data_home / f"{s}_for_inference.parquet")
@@ -89,8 +107,7 @@ class RepBasedScorer:
         (
             df_res := self.labels["held_out"].with_columns(pl.from_dict(self.score()))
         ).sink_parquet(
-            self.processed_data_home
-            / f"scores-rep-based-{self.cfg.run_name}.parquet"
+            self.output_home / f"scores-rep-based-{self.cfg.run_name}.parquet"
         )
 
         if verbose:
