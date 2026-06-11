@@ -134,7 +134,7 @@ override by passing a config file via the appropriate CLI flag. Any value can
 also be overridden programmatically via `**kwargs` which are merged on top of the
 YAML config via OmegaConf.
 
-#### Training configuration ([example](src/cotorra/config/training.yaml))
+### Training configuration ([example](src/cotorra/config/training.yaml))
 
 Used by `cotorra train` and `cotorra tune`.
 
@@ -170,7 +170,7 @@ Used by `cotorra train` and `cotorra tune`.
   [`hyperparameter_search`](https://huggingface.co/docs/transformers/hpo_train?backends=Optuna)
   when `cotorra tune` is called.
 
-#### Extraction configuration ([example](src/cotorra/config/extraction.yaml))
+### Extraction configuration ([example](src/cotorra/config/extraction.yaml))
 
 Used by `cotorra extract`.
 
@@ -185,7 +185,7 @@ Used by `cotorra extract`.
   - **shard_size** _(optional)_: Number of samples per output parquet shard. Omit
     to write a single file per split.
 
-#### Scoring configuration ([example](src/cotorra/config/scoring.yaml))
+### Scoring configuration ([example](src/cotorra/config/scoring.yaml))
 
 Used by `cotorra generative-score` and `cotorra rep-based-score`.
 
@@ -327,16 +327,26 @@ with commands:
   this requires that features have already been extracted and saved
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --scoring-config       -s      PATH  Scoring configuration file          │
-  │                                         (overrides default)                 │
-  │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
-  │ *  --model-home           -m      TEXT  Directory of the trained model to   │
-  │                                         score with                          │
-  │                                         [required]                          │
-  │    --output-home          -o      TEXT  Output directory for scores,        │
-  │                                         defaults to processed-data-home     │
-  │    --verbose              -v            Verbose logging for collate         │
-  │    --help                               Show this message and exit.         │
+  │    --scoring-config      -s      PATH                 Scoring configuration │
+  │                                                       file (overrides       │
+  │                                                       default)              │
+  │ *  --processed-data-ho…  -p      TEXT                 Processed data        │
+  │                                                       directory             │
+  │                                                       [required]            │
+  │ *  --model-home          -m      TEXT                 Directory of the      │
+  │                                                       trained model to      │
+  │                                                       score with            │
+  │                                                       [required]            │
+  │    --output-home         -o      TEXT                 Output directory for  │
+  │                                                       scores, defaults to   │
+  │                                                       processed-data-home   │
+  │    --estimator                   [lightGBM|k-NN|logi  Estimator to use for  │
+  │                                  stic|logistic-CV]    rep-based scoring     │
+  │                                                       [default: lightGBM]   │
+  │    --verbose             -v                           Verbose logging for   │
+  │                                                       collate               │
+  │    --help                                             Show this message and │
+  │                                                       exit.                 │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 

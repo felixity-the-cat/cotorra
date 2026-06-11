@@ -7,7 +7,7 @@ CLI for cotorra - configurable training for generative event models
 import pathlib
 import time
 from importlib.metadata import version
-from typing import Annotated, Optional
+from typing import Annotated, Literal, Optional
 
 import typer
 from rich import print
@@ -257,6 +257,10 @@ def rep_based_score(
             help="Output directory for scores, defaults to processed-data-home",
         ),
     ] = None,
+    estimator_type: Annotated[
+        Literal["lightGBM", "k-NN", "logistic", "logistic-CV"],
+        typer.Option("--estimator", help="Estimator to use for rep-based scoring"),
+    ] = "lightGBM",
     verbose: Annotated[
         bool,
         typer.Option(
@@ -276,6 +280,7 @@ def rep_based_score(
             processed_data_home=processed_data_home,
             model_home=model_home,
             output_home=output_home,
+            estimator_type=estimator_type,
         )
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()

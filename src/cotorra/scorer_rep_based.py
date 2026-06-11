@@ -5,10 +5,12 @@ make representation-based predictions on held-out data
 """
 
 import pathlib
+import typing
 
 import lightgbm as lgb
 import numpy as np
 import polars as pl
+import sklearn as skl
 import tqdm
 from omegaconf import OmegaConf
 
@@ -24,6 +26,9 @@ class RepBasedScorer(Configurable):
         processed_data_home: pathlib.Path | str = None,
         model_home: pathlib.Path | str = None,
         output_home: pathlib.Path | str = None,
+        estimator_type: typing.Literal[
+            "lightGBM", "k-NN", "logistic", "logistic-CV"
+        ] = "lightGBM",
         **kwargs,
     ):
         super().__init__(scoring_cfg, **kwargs)
@@ -39,6 +44,7 @@ class RepBasedScorer(Configurable):
         self.tkzr_cfg = OmegaConf.load(self.processed_data_home / "tokenizer.yaml")
 
         self.splits = ("train", "tuning", "held_out")
+        self.estimator_type = estimator_type
 
         try:
             self.features = {
@@ -79,8 +85,23 @@ class RepBasedScorer(Configurable):
             self.labels["held_out"].select(cols[0]).collect().to_numpy().ravel()
         )
 
-        bst = lgb.LGBMClassifier(min_data_in_leaf=5, num_leaves=64)
-        bst.fit(
+        match self.estimator_type.lower():
+            case "k-nn":
+                self.logger.info("Using k-nn classifier")
+                mdl = skl.neighbors.KNeighborsClassifier(n_jobs=-1)
+            case "logistic":
+                self.logger.info("Using logistic regression classifier")
+                mdl = skl.linear_model.LogisticRegression(n_jobs=-1)
+            case "logistic-cv":
+                self.logger.info(
+                    "Using logistic regression classifier with cross-validation"
+                )
+                mdl = skl.linear_model.LogisticRegressionCV(n_jobs=-1)
+            case _:
+                self.logger.info("Using (default) lightGBM classifier")
+                mdl = lgb.LGBMClassifier(min_data_in_leaf=5, num_leaves=64)
+
+        mdl.fit(
             X=self.features["train"][train_valid],
             y=train_label[train_valid],
             eval_set=[
@@ -90,7 +111,7 @@ class RepBasedScorer(Configurable):
         )
 
         scores = np.nan * np.ones_like(held_out_valid)
-        scores[held_out_valid] = bst.predict_proba(
+        scores[held_out_valid] = mdl.predict_proba(
             X=self.features["held_out"][held_out_valid]
         )[:, 1]
 
