@@ -6,8 +6,9 @@ CLI for cotorra - configurable training for generative event models
 
 import pathlib
 import time
+from enum import Enum
 from importlib.metadata import version
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Optional
 
 import typer
 from rich import print
@@ -25,6 +26,13 @@ app = typer.Typer(
     help=f"Configurable training for generative event models (v{__version__})",
 )
 console = Console()
+
+
+class EstimatorType(str, Enum):
+    lightgbm = "lightGBM"
+    knn = "k-NN"
+    logistic = "logistic"
+    logistic_cv = "logistic-CV"
 
 
 @app.command()
@@ -258,9 +266,9 @@ def rep_based_score(
         ),
     ] = None,
     estimator_type: Annotated[
-        Literal["lightGBM", "k-NN", "logistic", "logistic-CV"],
+        EstimatorType,
         typer.Option("--estimator", help="Estimator to use for rep-based scoring"),
-    ] = "lightGBM",
+    ] = EstimatorType.lightgbm,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -280,7 +288,7 @@ def rep_based_score(
             processed_data_home=processed_data_home,
             model_home=model_home,
             output_home=output_home,
-            estimator_type=estimator_type,
+            estimator_type=estimator_type.value,
         )
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
