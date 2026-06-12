@@ -12,6 +12,7 @@ import numpy as np
 import polars as pl
 import sklearn as skl
 import tqdm
+import xgboost as xgb
 from omegaconf import OmegaConf
 
 from cotorra.configurable import Configurable
@@ -27,7 +28,7 @@ class RepBasedScorer(Configurable):
         model_home: pathlib.Path | str = None,
         output_home: pathlib.Path | str = None,
         estimator_type: typing.Literal[
-            "lightGBM", "k-NN", "logistic", "logistic-CV"
+            "k-NN", "lightGBM", "logistic", "logistic-CV", "XGBoost"
         ] = "lightGBM",
         **kwargs,
     ):
@@ -85,29 +86,53 @@ class RepBasedScorer(Configurable):
             self.labels["held_out"].select(cols[0]).collect().to_numpy().ravel()
         )
 
-        match self.estimator_type.lower():
-            case "k-nn":
-                self.logger.info("Using k-nn classifier")
-                mdl = skl.neighbors.KNeighborsClassifier(n_jobs=-1)
-            case "logistic":
+        match str(self.estimator_type).lower():
+            case "logistic" | "lr" | "logistic-regression":
                 self.logger.info("Using logistic regression classifier")
-                mdl = skl.linear_model.LogisticRegression(n_jobs=-1)
-            case "logistic-cv":
+                mdl = skl.pipeline.make_pipeline(
+                    skl.preprocessing.StandardScaler(),
+                    skl.linear_model.LogisticRegression(max_iter=10_000),
+                )
+            case "logistic-cv" | "lr-cv":
                 self.logger.info(
                     "Using logistic regression classifier with cross-validation"
                 )
-                mdl = skl.linear_model.LogisticRegressionCV(n_jobs=-1)
+                mdl = skl.pipeline.make_pipeline(
+                    skl.preprocessing.StandardScaler(),
+                    skl.linear_model.LogisticRegressionCV(n_jobs=-1, max_iter=10_000),
+                )
+            case "k-nn" | "knn" | "k_nn":
+                self.logger.info("Using k-nn classifier")
+                mdl = skl.neighbors.KNeighborsClassifier(
+                    n_neighbors=max(25, int(0.2 * sum(train_valid))), n_jobs=-1
+                )
+            case "xgboost":
+                self.logger.info("Using XGBoost classifier")
+                mdl = xgb.XGBClassifier(
+                    min_child_weight=5, max_leaves=64, n_estimators=250, n_jobs=-1
+                )
             case _:
                 self.logger.info("Using (default) lightGBM classifier")
-                mdl = lgb.LGBMClassifier(min_data_in_leaf=5, num_leaves=64)
+                mdl = lgb.LGBMClassifier(
+                    min_data_in_leaf=5, num_leaves=64, n_estimators=250, n_jobs=-1
+                )
 
         mdl.fit(
             X=self.features["train"][train_valid],
             y=train_label[train_valid],
-            eval_set=[
-                (self.features["tuning"][tuning_valid], tuning_label[tuning_valid])
-            ],
-            eval_metric="auc",
+            **(
+                {
+                    "eval_set": [
+                        (
+                            self.features["tuning"][tuning_valid],
+                            tuning_label[tuning_valid],
+                        )
+                    ],
+                    "eval_metric": "auc",
+                }
+                if str(self.estimator_type).lower() in ("lightgbm", "xgboost")
+                else {}
+            ),
         )
 
         scores = np.nan * np.ones_like(held_out_valid)

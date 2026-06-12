@@ -249,8 +249,8 @@ with commands:
   │                                         [required]                          │
   │ *  --output-home          -o      TEXT  Output directory for trained models │
   │                                         [required]                          │
-  │    --verbose              -v            Verbose logging for collate         │
-  │    --help                               Show this message and exit.         │
+  │    --verbose              -v            Verbose logging         │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -269,8 +269,8 @@ with commands:
   │                                         [required]                          │
   │ *  --output-home          -o      TEXT  Output directory for trained models │
   │                                         [required]                          │
-  │    --verbose              -v            Verbose logging for collate         │
-  │    --help                               Show this message and exit.         │
+  │    --verbose              -v            Verbose logging         │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -290,8 +290,8 @@ with commands:
   │                                         [required]                          │
   │    --output-home          -o      TEXT  Output directory for scores,        │
   │                                         defaults to processed-data-home     │
-  │    --verbose              -v            Verbose logging for collate         │
-  │    --help                               Show this message and exit.         │
+  │    --verbose              -v            Verbose logging         │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -314,7 +314,7 @@ with commands:
   │                                         processed-data-home                 │
   │    --all-times            -a            Extract features for all time steps │
   │                                         (instead of just the final one)?    │
-  │    --help                               Show this message and exit.         │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -340,12 +340,11 @@ with commands:
   │    --output-home         -o      TEXT                 Output directory for  │
   │                                                       scores, defaults to   │
   │                                                       processed-data-home   │
-  │    --estimator                   [lightGBM|k-NN|logi  Estimator to use for  │
-  │                                  stic|logistic-CV]    rep-based scoring     │
-  │                                                       [default: lightGBM]   │
-  │    --verbose             -v                           Verbose logging for   │
-  │                                                       collate               │
-  │    --help                                             Show this message and │
+  │    --estimator                   [k-NN|lightGBM|logi  Estimator to use for  │
+  │                                  stic|logistic-CV|XG  rep-based scoring     │
+  │                                  Boost]               [default: lightGBM]   │
+  │    --verbose             -v                           Verbose logging       │
+  │    --help                -h                           Show this message and │
   │                                                       exit.                 │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```

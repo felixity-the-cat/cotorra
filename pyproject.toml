@@ -29,6 +29,7 @@
         "tqdm",
         "transformers",
         "typer",
+        "xgboost",
         "wandb",
     ]
     description = "configurable trainer for generative event models"

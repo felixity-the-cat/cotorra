@@ -24,15 +24,17 @@ __version__ = version("cotorra")
 app = typer.Typer(
     name="cotorra",
     help=f"Configurable training for generative event models (v{__version__})",
+    context_settings={"help_option_names": ["-h", "--help"]},
 )
 console = Console()
 
 
 class EstimatorType(str, Enum):
-    lightgbm = "lightGBM"
     knn = "k-NN"
+    lightgbm = "lightGBM"
     logistic = "logistic"
     logistic_cv = "logistic-CV"
+    xgboost = "XGBoost"
 
 
 @app.command()
@@ -58,10 +60,7 @@ def train(
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
     ] = ...,
     verbose: Annotated[
-        bool,
-        typer.Option(
-            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
-        ),
+        bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
 ):
     """
@@ -104,10 +103,7 @@ def tune(
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
     ] = ...,
     verbose: Annotated[
-        bool,
-        typer.Option(
-            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
-        ),
+        bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
 ):
     """
@@ -152,7 +148,8 @@ def extract(
         typer.Option(
             "--output-home",
             "-o",
-            help="Output directory for extracted features, defaults to processed-data-home",
+            help="Output directory for extracted features, "
+            "defaults to processed-data-home",
         ),
     ] = None,
     all_times: Annotated[
@@ -212,10 +209,7 @@ def generative_score(
         ),
     ] = None,
     verbose: Annotated[
-        bool,
-        typer.Option(
-            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
-        ),
+        bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
 ):
     """
@@ -267,13 +261,12 @@ def rep_based_score(
     ] = None,
     estimator_type: Annotated[
         EstimatorType,
-        typer.Option("--estimator", help="Estimator to use for rep-based scoring"),
+        typer.Option(
+            "--estimator", "-e", help="Estimator to use for rep-based scoring"
+        ),
     ] = EstimatorType.lightgbm,
     verbose: Annotated[
-        bool,
-        typer.Option(
-            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
-        ),
+        bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
 ):
     """
