@@ -64,7 +64,7 @@ class Loss:
             cat_logits = shift_logits[mask][:, self.label_to_cat == i]
             cat_preds = t.softmax(cat_logits, dim=-1) @ (
                 self.label_to_q[self.label_to_cat == i]
-            ).to(device=cat_logits.device)
+            ).to(device=cat_logits.device, dtype=cat_logits.dtype)
             cat_true = self.label_to_q.to(device=cat_labels.device)[cat_labels]
             loss += t.nn.MSELoss()(cat_preds, cat_true)
         return loss
