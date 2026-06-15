@@ -1,10 +1,3 @@
-[![DOI](img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
-[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
-
-# Cotorra: a configurable trainer
-
-> 🦜 the wild parakeet of Chicago's south side
-
 <p align="center">
 <img src="img/cotorra.png" width="400" style="display: block;
 margin: 0 auto; -webkit-mask-image: radial-gradient(
@@ -18,6 +11,13 @@ margin: 0 auto; -webkit-mask-image: radial-gradient(
     rgba(0,0,0,0) 100%
   );"/>
 </p>
+
+# Cotorra: a configurable trainer
+
+[![DOI](img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
+[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
+
+> 🦜 the wild parakeet of Chicago's south side
 
 ## About
 
