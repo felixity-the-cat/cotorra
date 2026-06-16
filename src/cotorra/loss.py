@@ -13,7 +13,7 @@ import torch as t
 import wandb
 from cotorra.logger import Logger
 
-t.set_default_dtype(t.float32)
+# NOTE: avoid changing global torch default dtype; cast tensors/ops explicitly where needed.
 
 
 class Loss:
