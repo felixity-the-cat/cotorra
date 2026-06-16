@@ -6,6 +6,7 @@ use @lukesolo-ml's implementation of SCORE and REACH to make generative predicti
 
 import asyncio
 import collections
+import fnmatch
 import pathlib
 
 import numpy as np
@@ -52,6 +53,15 @@ class GenerativeScorer(Configurable):
         )
         self.tokens_past = self.ds.select("tokens_past").collect().to_series().to_list()
 
+        self.grokked_outcome_tokens = [
+            x
+            for x in self.tkzr_cfg.lookup.keys()
+            if any(fnmatch.fnmatch(x, p) for p in self.cfg.score.target_tokens)
+        ]
+        self.logger.info(
+            f"Processed expressions to generate {self.grokked_outcome_tokens=}"
+        )
+
     async def sco_re(self, target_token: str, to_score_tokens: list[int]):
         tid = self.tkzr_cfg.lookup[target_token]
         sco_re_config = GenerationConfig(
@@ -73,7 +83,7 @@ class GenerativeScorer(Configurable):
     async def score(self):
         res = collections.defaultdict(lambda: np.nan * np.ones(len(self.tokens_past)))
 
-        for tt in tqdm.tqdm(self.cfg.score.target_tokens, position=0):
+        for tt in tqdm.tqdm(self.grokked_outcome_tokens, position=0):
             to_score = (
                 self.ds.select(~pl.col(f"{tt}_past")).collect().to_series().to_numpy()
             )
@@ -112,7 +122,7 @@ class GenerativeScorer(Configurable):
         )
 
         if verbose:
-            self.logger.summarize_preds(df_res, self.cfg.score.target_tokens)
+            self.logger.summarize_preds(df_res, self.grokked_outcome_tokens)
 
 
 if __name__ == "__main__":

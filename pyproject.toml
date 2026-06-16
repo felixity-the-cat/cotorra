@@ -29,6 +29,7 @@
         "tqdm",
         "transformers",
         "typer",
+        "xgboost",
         "wandb",
     ]
     description = "configurable trainer for generative event models"
@@ -42,7 +43,7 @@
     name = "cotorra"
     readme = { file = "README.md", content-type = "text/markdown" }
     requires-python = ">=3.11"
-    version = "26.5.0"
+    version = "26.5.1"
 
     [project.scripts]
         cotorra = "cotorra.cli:main"

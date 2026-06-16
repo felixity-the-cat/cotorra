@@ -1,10 +1,3 @@
-[![DOI](img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
-[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
-
-# Cotorra: a configurable trainer
-
-> 🦜 the wild parakeet of Chicago's south side
-
 <p align="center">
 <img src="img/cotorra.png" width="400" style="display: block;
 margin: 0 auto; -webkit-mask-image: radial-gradient(
@@ -18,6 +11,13 @@ margin: 0 auto; -webkit-mask-image: radial-gradient(
     rgba(0,0,0,0) 100%
   );"/>
 </p>
+
+# Cotorra: a configurable trainer
+
+[![DOI](img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
+[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
+
+> 🦜 the wild parakeet of Chicago's south side
 
 ## About
 
@@ -134,7 +134,7 @@ override by passing a config file via the appropriate CLI flag. Any value can
 also be overridden programmatically via `**kwargs` which are merged on top of the
 YAML config via OmegaConf.
 
-#### Training configuration ([example](src/cotorra/config/training.yaml))
+### Training configuration ([example](src/cotorra/config/training.yaml))
 
 Used by `cotorra train` and `cotorra tune`.
 
@@ -147,7 +147,7 @@ Used by `cotorra train` and `cotorra tune`.
 - **run_name**: Name for the current run (referenced by `wandb` and
   `training_args`).
 - **tokens_of_interest**: List of special tokens to upweight during training
-  (referenced by loss config).
+  (referenced by loss config). Supports patterns specified with fnmatch.
 - **wandb**:
   - **project**: Weights & Biases project name for experiment tracking.
   - **run_name**: Name for the current run.
@@ -158,7 +158,8 @@ Used by `cotorra train` and `cotorra tune`.
   - **qt_weight**: Weight multiplier for quantile tokens.
 - **label_weighted_loss** _(optional)_: Upweights loss on specific tokens of
   clinical interest.
-  - **tokens_of_interest**: List of token labels to upweight.
+  - **tokens_of_interest**: List of token labels to upweight. Supports patterns
+    specified with fnmatch.
   - **toi_weight**: Weight multiplier applied to those tokens.
 - **time_based_rope** _(optional)_: Enables time-aware rotary position
   embeddings.
@@ -170,7 +171,7 @@ Used by `cotorra train` and `cotorra tune`.
   [`hyperparameter_search`](https://huggingface.co/docs/transformers/hpo_train?backends=Optuna)
   when `cotorra tune` is called.
 
-#### Extraction configuration ([example](src/cotorra/config/extraction.yaml))
+### Extraction configuration ([example](src/cotorra/config/extraction.yaml))
 
 Used by `cotorra extract`.
 
@@ -185,16 +186,18 @@ Used by `cotorra extract`.
   - **shard_size** _(optional)_: Number of samples per output parquet shard. Omit
     to write a single file per split.
 
-#### Scoring configuration ([example](src/cotorra/config/scoring.yaml))
+### Scoring configuration ([example](src/cotorra/config/scoring.yaml))
 
 Used by `cotorra generative-score` and `cotorra rep-based-score`.
 
 - **run_name**: Name for the current run, used to label output files.
-- **tokens_of_interest**: List of token-based outcomes of interest.
+- **tokens_of_interest**: List of token-based outcomes of interest. Supports
+  patterns specified with fnmatch. (Referenced by target tokens.)
 - **score**:
   - **max_len**: Maximum input length (tokens) during scoring.
   - **n_samp**: Number of Monte Carlo samples per input per trajectory type.
-  - **target_tokens**: Token-based outcomes of interest to score.
+  - **target_tokens**: Token-based outcomes of interest to score. Supports
+    patterns specified with fnmatch.
   - **end_tokens**: Tokens that naturally terminate a generated sequence (e.g.
     `EOS`).
   - **suppressed_tokens**: Tokens to suppress via logit bias during generation
@@ -249,8 +252,8 @@ with commands:
   │                                         [required]                          │
   │ *  --output-home          -o      TEXT  Output directory for trained models │
   │                                         [required]                          │
-  │    --verbose              -v            Verbose logging for collate         │
-  │    --help                               Show this message and exit.         │
+  │    --verbose              -v            Verbose logging         │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -269,8 +272,8 @@ with commands:
   │                                         [required]                          │
   │ *  --output-home          -o      TEXT  Output directory for trained models │
   │                                         [required]                          │
-  │    --verbose              -v            Verbose logging for collate         │
-  │    --help                               Show this message and exit.         │
+  │    --verbose              -v            Verbose logging         │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -290,8 +293,8 @@ with commands:
   │                                         [required]                          │
   │    --output-home          -o      TEXT  Output directory for scores,        │
   │                                         defaults to processed-data-home     │
-  │    --verbose              -v            Verbose logging for collate         │
-  │    --help                               Show this message and exit.         │
+  │    --verbose              -v            Verbose logging         │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -314,7 +317,7 @@ with commands:
   │                                         processed-data-home                 │
   │    --all-times            -a            Extract features for all time steps │
   │                                         (instead of just the final one)?    │
-  │    --help                               Show this message and exit.         │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -327,16 +330,25 @@ with commands:
   this requires that features have already been extracted and saved
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --scoring-config       -s      PATH  Scoring configuration file          │
-  │                                         (overrides default)                 │
-  │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
-  │ *  --model-home           -m      TEXT  Directory of the trained model to   │
-  │                                         score with                          │
-  │                                         [required]                          │
-  │    --output-home          -o      TEXT  Output directory for scores,        │
-  │                                         defaults to processed-data-home     │
-  │    --verbose              -v            Verbose logging for collate         │
-  │    --help                               Show this message and exit.         │
+  │    --scoring-config      -s      PATH                 Scoring configuration │
+  │                                                       file (overrides       │
+  │                                                       default)              │
+  │ *  --processed-data-ho…  -p      TEXT                 Processed data        │
+  │                                                       directory             │
+  │                                                       [required]            │
+  │ *  --model-home          -m      TEXT                 Directory of the      │
+  │                                                       trained model to      │
+  │                                                       score with            │
+  │                                                       [required]            │
+  │    --output-home         -o      TEXT                 Output directory for  │
+  │                                                       scores, defaults to   │
+  │                                                       processed-data-home   │
+  │    --estimator                   [k-NN|lightGBM|logi  Estimator to use for  │
+  │                                  stic|logistic-CV|XG  rep-based scoring     │
+  │                                  Boost]               [default: lightGBM]   │
+  │    --verbose             -v                           Verbose logging       │
+  │    --help                -h                           Show this message and │
+  │                                                       exit.                 │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 

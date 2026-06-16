@@ -13,9 +13,6 @@ import wandb
 
 from cotorra.logger import Logger
 
-t.set_default_dtype(t.float32)
-
-
 class Loss:
     def __init__(self, cfg=None, tkzr_cfg=None):
 
@@ -24,20 +21,20 @@ class Loss:
         self.vocab = np.array(
             sorted(self.tkzr_cfg.lookup, key=self.tkzr_cfg.lookup.get)
         )
+        self.grokked_outcome_tokens = [
+            x
+            for x in self.vocab
+            if any(
+                fnmatch.fnmatch(x, p)
+                for p in self.cfg.label_weighted_loss.tokens_of_interest
+            )
+        ]
         self.logger = Logger()
+        self.logger.info(
+            f"Processed expressions to generate {self.grokked_outcome_tokens=}"
+        )
 
         if "label_weighted_loss" in self.cfg:
-            self.grokked_outcome_tokens = [
-                x
-                for x in self.vocab
-                if any(
-                    fnmatch.fnmatch(x, p)
-                    for p in self.cfg.label_weighted_loss.tokens_of_interest
-                )
-            ]
-            self.logger.info(
-                f"Processed expressions to generate {self.grokked_outcome_tokens=}"
-            )
             self.toi_flag = np.isin(self.vocab, self.grokked_outcome_tokens)
             self.weights = t.tensor(
                 (self.cfg.label_weighted_loss.toi_weight - 1) * self.toi_flag + 1

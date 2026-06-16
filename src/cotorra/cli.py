@@ -14,7 +14,7 @@ from rich import print
 from rich.console import Console
 
 from cotorra.extractor import Extractor
-from cotorra.scorer_rep_based import RepBasedScorer
+from cotorra.scorer_rep_based import EstimatorType, RepBasedScorer
 from cotorra.trainer import Trainer
 from cotorra.tuner import Tuner
 
@@ -23,6 +23,7 @@ __version__ = version("cotorra")
 app = typer.Typer(
     name="cotorra",
     help=f"Configurable training for generative event models (v{__version__})",
+    context_settings={"help_option_names": ["-h", "--help"]},
 )
 console = Console()
 
@@ -50,10 +51,7 @@ def train(
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
     ] = ...,
     verbose: Annotated[
-        bool,
-        typer.Option(
-            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
-        ),
+        bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
 ):
     """
@@ -96,10 +94,7 @@ def tune(
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
     ] = ...,
     verbose: Annotated[
-        bool,
-        typer.Option(
-            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
-        ),
+        bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
 ):
     """
@@ -144,7 +139,8 @@ def extract(
         typer.Option(
             "--output-home",
             "-o",
-            help="Output directory for extracted features, defaults to processed-data-home",
+            help="Output directory for extracted features, "
+            "defaults to processed-data-home",
         ),
     ] = None,
     all_times: Annotated[
@@ -204,10 +200,7 @@ def generative_score(
         ),
     ] = None,
     verbose: Annotated[
-        bool,
-        typer.Option(
-            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
-        ),
+        bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
 ):
     """
@@ -257,11 +250,14 @@ def rep_based_score(
             help="Output directory for scores, defaults to processed-data-home",
         ),
     ] = None,
-    verbose: Annotated[
-        bool,
+    estimator_type: Annotated[
+        EstimatorType,
         typer.Option(
-            "--verbose", "-v", help="Verbose logging for collate", is_flag=True
+            "--estimator", "-e", help="Estimator to use for rep-based scoring"
         ),
+    ] = EstimatorType.lightgbm,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
 ):
     """
@@ -276,6 +272,7 @@ def rep_based_score(
             processed_data_home=processed_data_home,
             model_home=model_home,
             output_home=output_home,
+            estimator_type=estimator_type.value,
         )
         scorer.save_all(verbose=verbose)
         t1 = time.perf_counter()
