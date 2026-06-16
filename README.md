@@ -147,7 +147,7 @@ Used by `cotorra train` and `cotorra tune`.
 - **run_name**: Name for the current run (referenced by `wandb` and
   `training_args`).
 - **tokens_of_interest**: List of special tokens to upweight during training
-  (referenced by loss config).
+  (referenced by loss config). Supports patterns specified with fnmatch.
 - **wandb**:
   - **project**: Weights & Biases project name for experiment tracking.
   - **run_name**: Name for the current run.
@@ -158,7 +158,8 @@ Used by `cotorra train` and `cotorra tune`.
   - **qt_weight**: Weight multiplier for quantile tokens.
 - **label_weighted_loss** _(optional)_: Upweights loss on specific tokens of
   clinical interest.
-  - **tokens_of_interest**: List of token labels to upweight.
+  - **tokens_of_interest**: List of token labels to upweight. Supports patterns
+    specified with fnmatch.
   - **toi_weight**: Weight multiplier applied to those tokens.
 - **time_based_rope** _(optional)_: Enables time-aware rotary position
   embeddings.
@@ -190,11 +191,13 @@ Used by `cotorra extract`.
 Used by `cotorra generative-score` and `cotorra rep-based-score`.
 
 - **run_name**: Name for the current run, used to label output files.
-- **tokens_of_interest**: List of token-based outcomes of interest.
+- **tokens_of_interest**: List of token-based outcomes of interest. Supports
+  patterns specified with fnmatch. (Referenced by target tokens.)
 - **score**:
   - **max_len**: Maximum input length (tokens) during scoring.
   - **n_samp**: Number of Monte Carlo samples per input per trajectory type.
-  - **target_tokens**: Token-based outcomes of interest to score.
+  - **target_tokens**: Token-based outcomes of interest to score. Supports
+    patterns specified with fnmatch.
   - **end_tokens**: Tokens that naturally terminate a generated sequence (e.g.
     `EOS`).
   - **suppressed_tokens**: Tokens to suppress via logit bias during generation

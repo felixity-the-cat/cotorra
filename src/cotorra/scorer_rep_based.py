@@ -4,6 +4,8 @@
 make representation-based predictions on held-out data
 """
 
+import enum
+import fnmatch
 import pathlib
 import typing
 
@@ -16,6 +18,14 @@ import xgboost as xgb
 from omegaconf import OmegaConf
 
 from cotorra.configurable import Configurable
+
+
+class EstimatorType(str, enum.Enum):
+    knn = "k-NN"
+    lightgbm = "lightGBM"
+    logistic = "logistic"
+    logistic_cv = "logistic-CV"
+    xgboost = "XGBoost"
 
 
 class RepBasedScorer(Configurable):
@@ -73,6 +83,15 @@ class RepBasedScorer(Configurable):
             s: pl.scan_parquet(self.processed_data_home / f"{s}_for_inference.parquet")
             for s in self.splits
         }
+
+        self.grokked_outcome_tokens = [
+            x
+            for x in self.tkzr_cfg.lookup.keys()
+            if any(fnmatch.fnmatch(x, p) for p in self.cfg.score.target_tokens)
+        ]
+        self.logger.info(
+            f"Processed expressions to generate {self.grokked_outcome_tokens=}"
+        )
 
     def score_label(self, target_token="DSCG//expired"):
         cols = (~pl.col(f"{target_token}_past"), f"{target_token}_future")
@@ -144,7 +163,7 @@ class RepBasedScorer(Configurable):
 
     def score(self):
         res = dict()
-        for tt in tqdm.tqdm(self.cfg.score.target_tokens, position=0):
+        for tt in tqdm.tqdm(self.grokked_outcome_tokens, position=0):
             res[f"{tt}_rep_score"] = self.score_label(target_token=tt)
 
         return res
@@ -155,7 +174,7 @@ class RepBasedScorer(Configurable):
         ).sink_parquet(self.output_home)
 
         if verbose:
-            self.logger.summarize_preds(df_res, self.cfg.score.target_tokens)
+            self.logger.summarize_preds(df_res, self.grokked_outcome_tokens)
 
 
 if __name__ == "__main__":

@@ -5,11 +5,15 @@ configurable loss functions for training;
 note this code only runs when configured with `custom_loss: !!bool true`
 """
 
+import fnmatch
+
 import numpy as np
 import torch as t
 
 import wandb
 from cotorra.logger import Logger
+
+t.set_default_dtype(t.float32)
 
 
 class Loss:
@@ -20,12 +24,21 @@ class Loss:
         self.vocab = np.array(
             sorted(self.tkzr_cfg.lookup, key=self.tkzr_cfg.lookup.get)
         )
+        self.grokked_outcome_tokens = [
+            x
+            for x in self.vocab
+            if any(
+                fnmatch.fnmatch(x, p)
+                for p in self.cfg.label_weighted_loss.tokens_of_interest
+            )
+        ]
         self.logger = Logger()
+        self.logger.info(
+            f"Processed expressions to generate {self.grokked_outcome_tokens=}"
+        )
 
         if "label_weighted_loss" in self.cfg:
-            self.toi_flag = np.isin(
-                self.vocab, self.cfg.label_weighted_loss.tokens_of_interest
-            )
+            self.toi_flag = np.isin(self.vocab, self.grokked_outcome_tokens)
             self.weights = t.tensor(
                 (self.cfg.label_weighted_loss.toi_weight - 1) * self.toi_flag + 1
             )
@@ -61,12 +74,14 @@ class Loss:
             if not mask.any():
                 continue
             cat_labels = shift_labels[mask]
-            cat_logits = shift_logits[mask][:, self.label_to_cat == i]
+            cat_logits = shift_logits[mask][:, self.label_to_cat == i].to(
+                dtype=t.float32
+            )
             cat_preds = t.softmax(cat_logits, dim=-1) @ (
                 self.label_to_q[self.label_to_cat == i]
-            ).to(device=cat_logits.device)
+            ).to(device=cat_logits.device, dtype=t.float32)
             cat_true = self.label_to_q.to(device=cat_labels.device)[cat_labels]
-            loss += t.nn.MSELoss()(cat_preds, cat_true)
+            loss += t.nn.MSELoss()(cat_preds, cat_true).to(dtype=t.float32)
         return loss
 
     def label_weighted_loss(self, outputs, labels, **kwargs):
@@ -75,7 +90,9 @@ class Loss:
         shift_labels = labels[:, 1:].contiguous()
         return t.nn.CrossEntropyLoss(
             weight=self.weights.to(logits.device, dtype=logits.dtype)
-        )(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+        )(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).to(
+            dtype=t.float32
+        )
 
     def x_ent_loss(self, outputs, labels, **kwargs):
         logits = outputs.get("logits")  # (batch, seq_len, vocab_size)
@@ -83,7 +100,7 @@ class Loss:
         shift_labels = labels[:, 1:].contiguous()
         return t.nn.CrossEntropyLoss()(
             shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)
-        )
+        ).to(dtype=t.float32)
 
     def custom_loss(self, outputs, labels, **kwargs):
         loss = 0.0

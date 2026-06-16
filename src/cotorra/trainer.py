@@ -65,12 +65,22 @@ class Trainer(Configurable):
         self.run_name = self.cfg.get("run_name", self.cfg.wandb.get("run_name", ""))
         self.loader = Loader(training_cfg, self.processed_data_home)
 
+        self.trainer = TrainerWithCustomLoss(
+            model_init=self.model_init,
+            data_collator=self.collate_fn,
+            compute_loss_func=self.loss,
+            train_dataset=self.loader.get_train_data(),
+            eval_dataset=self.loader.get_tuning_data(),
+            args=TrainingArguments(
+                output_dir=str(self.output_home), **self.cfg.training_args
+            ),
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
+        )
+
         os.environ["WANDB_PROJECT"] = self.cfg.get("wandb", {}).get(
             "project", "cotorra"
         )
-        os.environ["WANDB_NAME"] = self.cfg.get("wandb", {}).get(
-            "run_name", "cotorra"
-        )
+        os.environ["WANDB_NAME"] = self.cfg.get("wandb", {}).get("run_name", "cotorra")
 
     def model_init(self):
         conf_param = dict(
@@ -101,31 +111,16 @@ class Trainer(Configurable):
             p_ids += t.arange(p_ids.shape[-1], device=p_ids.device, dtype=p_ids.dtype)
             return {"input_ids": input_ids, "labels": input_ids, "position_ids": p_ids}
 
-    def _make_trainer(self) -> TrainerWithCustomLoss:
-        return TrainerWithCustomLoss(
-            model_init=self.model_init,
-            data_collator=self.collate_fn,
-            compute_loss_func=self.loss,
-            train_dataset=self.loader.get_train_data(),
-            eval_dataset=self.loader.get_tuning_data(),
-            args=TrainingArguments(
-                output_dir=str(self.output_home), **self.cfg.training_args
-            ),
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
-        )
-
     def train(self, verbose=False):
-
-        trainer = self._make_trainer()
-        trainer.train()
-        trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
+        self.trainer.train()
+        self.trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
 
         with open(self.output_home / f"mdl-{self.run_name}-training.yaml", "w") as f:
             f.write(OmegaConf.to_yaml(self.cfg))
 
         if verbose:
             self.logger.summarize_trained_model(
-                model=trainer.model,
+                model=self.trainer.model,
                 bos_token_id=self.tkzr_cfg.lookup["BOS"],
                 reverse={v: k for k, v in self.tkzr_cfg.lookup.items()},
             )

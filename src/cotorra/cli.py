@@ -6,7 +6,6 @@ CLI for cotorra - configurable training for generative event models
 
 import pathlib
 import time
-from enum import Enum
 from importlib.metadata import version
 from typing import Annotated, Optional
 
@@ -15,7 +14,7 @@ from rich import print
 from rich.console import Console
 
 from cotorra.extractor import Extractor
-from cotorra.scorer_rep_based import RepBasedScorer
+from cotorra.scorer_rep_based import EstimatorType, RepBasedScorer
 from cotorra.trainer import Trainer
 from cotorra.tuner import Tuner
 
@@ -27,14 +26,6 @@ app = typer.Typer(
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 console = Console()
-
-
-class EstimatorType(str, Enum):
-    knn = "k-NN"
-    lightgbm = "lightGBM"
-    logistic = "logistic"
-    logistic_cv = "logistic-CV"
-    xgboost = "XGBoost"
 
 
 @app.command()
