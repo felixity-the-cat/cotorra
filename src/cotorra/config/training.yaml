@@ -14,7 +14,7 @@ model_args_presets:
     num_attention_heads: !!int 4
     num_key_value_heads: !!int 2
     max_position_embeddings: !!int 32768
-model_args: *llama_32_lite
+model_args: *llama_32
 
 max_seq_len: !!int &max_len 4096
 n_epochs: !!int 2
@@ -44,8 +44,8 @@ time_based_rope:
 training_args:
   report_to: wandb
   run_name: *run_name
-  per_device_train_batch_size: !!int 1
-  per_device_eval_batch_size: !!int 1
+  per_device_train_batch_size: !!int 8
+  per_device_eval_batch_size: !!int 8
   save_total_limit: !!int 1
   metric_for_best_model: eval_loss
   load_best_model_at_end: !!bool true

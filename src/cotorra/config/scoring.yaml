@@ -1,7 +1,6 @@
 %YAML 1.2
 ---
 max_seq_len: !!int &max_len 4096
-run_name: &run_name cotorra-tuning
 
 tokens_of_interest: &tois
   - XFR-IN//icu
