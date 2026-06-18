@@ -24,9 +24,9 @@ class EstimatorType(str, enum.Enum):
     knn = "k-NN"
     lightgbm = "lightGBM"
     logistic = "logistic"
-    logistic = "logistic-z"
+    logistic_z = "logistic-z"
     logistic_cv = "logistic-CV"
-    logistic_cv = "logistic-CV-z"
+    logistic_cv_z = "logistic-CV-z"
     xgboost = "XGBoost"
 
 
