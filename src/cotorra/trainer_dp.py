@@ -13,20 +13,33 @@ from cotorra.trainer import Trainer, TrainerWithCustomLoss
 
 
 class TrainerWithCustomLossDP(TrainerWithCustomLoss):
-    """Opacus-compatible trainer with explicit gradient zeroing before backward"""
+    """Opacus-compatible trainer that can use a DP-wrapped train DataLoader."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dp_train_dataloader = None
+
+    def set_dp_train_dataloader(self, dataloader):
+        self._dp_train_dataloader = dataloader
+
+    def get_train_dataloader(self):
+        if self._dp_train_dataloader is not None:
+            return self._dp_train_dataloader
+        return super().get_train_dataloader()
 
     def training_step(self, model, inputs, num_items_in_batch=None):
+        if self.args.gradient_accumulation_steps != 1:
+            raise ValueError(
+                "Opacus DP training currently requires gradient_accumulation_steps=1."
+            )
+
         self.optimizer.zero_grad()
         model.train()
         inputs = self._prepare_inputs(inputs)
         loss = self.compute_loss(model, inputs, num_items_in_batch=num_items_in_batch)
 
-        if self.args.gradient_accumulation_steps > 1:
-            loss = loss / self.args.gradient_accumulation_steps
-
         self.accelerator.backward(loss)
         return loss.detach()
-
 
 class TrainerDP(Trainer):
     def __init__(
