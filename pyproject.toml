@@ -19,6 +19,7 @@
         "lightgbm",
         "numpy",
         "omegaconf",
+        "opacus",
         "optuna",
         "polars",
         "rich",

@@ -130,4 +130,5 @@ if __name__ == "__main__":
     self = Trainer(
         processed_data_home="./processed/mimic", output_home="./output/mimic"
     )
-    self.train(verbose=True)
+    # self.train(verbose=True)
+    breakpoint()
