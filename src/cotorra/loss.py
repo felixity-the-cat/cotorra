@@ -9,8 +9,8 @@ import fnmatch
 
 import numpy as np
 import torch as t
-import wandb
 
+import wandb
 from cotorra.logger import Logger
 
 
@@ -23,7 +23,7 @@ class Loss:
             sorted(self.tkzr_cfg.lookup, key=self.tkzr_cfg.lookup.get)
         )
         self.grokked_outcome_tokens = [
-            x
+            x.item()
             for x in self.vocab
             if any(
                 fnmatch.fnmatch(x, p)
