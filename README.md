@@ -174,7 +174,7 @@ Used by `cotorra train` and `cotorra tune`.
   when `cotorra tune` is called.
 
 We wrap [opacus](https://opacus.ai) to support training with differential privacy
-(see `training-private` below). The following relevant parameters can be modified
+(see `train-private` below). The following relevant parameters can be modified
 in the configuration:
 
 ```
