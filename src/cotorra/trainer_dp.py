@@ -70,23 +70,26 @@ class TrainerDP(Trainer):
 
         self.trainer.create_optimizer()
 
-        # HuggingFace Trainer calls get_train_dataloader() internally and ignores
-        # self.trainer.train_dataloader, so Poisson sampling is incompatible.
-        # Using poisson_sampling=False keeps full DP-SGD guarantees.
-        self.trainer.model, self.trainer.optimizer, self.trainer.train_dataloader = (
-            opacus.PrivacyEngine().make_private(
-                module=self.model,
-                optimizer=self.trainer.optimizer,
-                data_loader=self.trainer.get_train_dataloader(),
-                noise_multiplier=self.cfg.get("privacy_parameters", {}).get(
-                    "noise_multiplier", 1.0
-                ),
-                max_grad_norm=self.cfg.get("privacy_parameters", {}).get(
-                    "max_grad_norm", 1.0
-                ),
-                # poisson_sampling=False,
-            )
+        # HuggingFace Trainer calls get_train_dataloader() internally, so we must
+        # ensure get_train_dataloader() returns the Opacus-wrapped DataLoader.
+        privacy_engine = opacus.PrivacyEngine()
+        dp_model, dp_optimizer, dp_dataloader = privacy_engine.make_private(
+            module=self.trainer.model,
+            optimizer=self.trainer.optimizer,
+            data_loader=self.trainer.get_train_dataloader(),
+            noise_multiplier=self.cfg.get("privacy_parameters", {}).get(
+                "noise_multiplier", 1.0
+            ),
+            max_grad_norm=self.cfg.get("privacy_parameters", {}).get(
+                "max_grad_norm", 1.0
+            ),
+            poisson_sampling=False,
         )
+        self.trainer.model = dp_model
+        self.trainer.optimizer = dp_optimizer
+        self.trainer.set_dp_train_dataloader(dp_dataloader)
+        self.model = self.trainer.model
+        self.privacy_engine = privacy_engine
 
 
 if __name__ == "__main__":
