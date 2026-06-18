@@ -13,6 +13,7 @@ import wandb
 
 from cotorra.logger import Logger
 
+
 class Loss:
     def __init__(self, cfg=None, tkzr_cfg=None):
 

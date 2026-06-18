@@ -41,6 +41,7 @@ class TrainerWithCustomLossDP(TrainerWithCustomLoss):
         self.accelerator.backward(loss)
         return loss.detach()
 
+
 class TrainerDP(Trainer):
     def __init__(
         self,
