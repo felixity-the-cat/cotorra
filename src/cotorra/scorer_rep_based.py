@@ -134,7 +134,7 @@ class RepBasedScorer(Configurable):
                 )
             case "logistic-cv-z" | "lr-cv-z":
                 self.logger.info(
-                    "Using logistic regression classifier with cross-validation"
+                    "Using logistic regression classifier with cross-validation "
                     "on z-scored features"
                 )
                 mdl = skl.pipeline.make_pipeline(
