@@ -62,6 +62,7 @@ class Logger(logging.Logger):
     def summarize_preds(self, df_res, target_tokens):
         cols = df_res.collect_schema().names()
         for tt in target_tokens:
+            self.info("=" * 42)
             self.info(f"{tt=}")
             for method in ("mc", "scope", "reach", "rep"):
                 if f"{tt}_{method}_score" in cols:
