@@ -76,6 +76,7 @@ class Trainer(Configurable):
             ),
             callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
         )
+        self.model = self.trainer.model
 
         os.environ["WANDB_PROJECT"] = self.cfg.get("wandb", {}).get(
             "project", "cotorra"
@@ -131,3 +132,4 @@ if __name__ == "__main__":
         processed_data_home="./processed/mimic", output_home="./output/mimic"
     )
     self.train(verbose=True)
+    # breakpoint()
