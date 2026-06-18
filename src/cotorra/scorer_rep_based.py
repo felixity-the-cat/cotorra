@@ -24,7 +24,9 @@ class EstimatorType(str, enum.Enum):
     knn = "k-NN"
     lightgbm = "lightGBM"
     logistic = "logistic"
+    logistic_z = "logistic-z"
     logistic_cv = "logistic-CV"
+    logistic_cv_z = "logistic-CV-z"
     xgboost = "XGBoost"
 
 
@@ -38,7 +40,13 @@ class RepBasedScorer(Configurable):
         model_home: pathlib.Path | str = None,
         output_home: pathlib.Path | str = None,
         estimator_type: typing.Literal[
-            "k-NN", "lightGBM", "logistic", "logistic-CV", "XGBoost"
+            "k-NN",
+            "lightGBM",
+            "logistic",
+            "logistic-z",
+            "logistic-CV",
+            "logistic-CV-z",
+            "XGBoost",
         ] = "lightGBM",
         **kwargs,
     ):
@@ -108,6 +116,11 @@ class RepBasedScorer(Configurable):
         match str(self.estimator_type).lower():
             case "logistic" | "lr" | "logistic-regression":
                 self.logger.info("Using logistic regression classifier")
+                mdl = skl.linear_model.LogisticRegression(max_iter=10_000)
+            case "logistic-z" | "lr-z" | "logistic-regression-z":
+                self.logger.info(
+                    "Using logistic regression classifier on z-scored features"
+                )
                 mdl = skl.pipeline.make_pipeline(
                     skl.preprocessing.StandardScaler(),
                     skl.linear_model.LogisticRegression(max_iter=10_000),
@@ -116,9 +129,19 @@ class RepBasedScorer(Configurable):
                 self.logger.info(
                     "Using logistic regression classifier with cross-validation"
                 )
+                mdl = skl.linear_model.LogisticRegressionCV(
+                    n_jobs=-1, scoring="roc_auc", max_iter=10_000
+                )
+            case "logistic-cv-z" | "lr-cv-z":
+                self.logger.info(
+                    "Using logistic regression classifier with cross-validation "
+                    "on z-scored features"
+                )
                 mdl = skl.pipeline.make_pipeline(
                     skl.preprocessing.StandardScaler(),
-                    skl.linear_model.LogisticRegressionCV(n_jobs=-1, max_iter=10_000),
+                    skl.linear_model.LogisticRegressionCV(
+                        n_jobs=-1, scoring="roc_auc", max_iter=10_000
+                    ),
                 )
             case "k-nn" | "knn" | "k_nn":
                 self.logger.info("Using k-nn classifier")

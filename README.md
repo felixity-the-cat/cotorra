@@ -84,7 +84,9 @@ lookup:
 
 Finally, we need `subject_splits.parquet` which is a table listing out all
 subject_id's and their corresponding split assignment (with splits: `train`,
-`tuning`, and `held_out`):
+`tuning`, and `held_out`). This table may include additional demographic
+information provided as pass-through-columns to
+[cocoa](https://github.com/bbj-lab/cocoa).
 
 ```
 ┌────────────┬──────────┐
