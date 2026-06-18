@@ -36,6 +36,7 @@ def train(
             "--training-config",
             "-t",
             help="Training configuration file (overrides default)",
+            show_default=False,
         ),
     ] = None,
     processed_data_home: Annotated[
@@ -87,11 +88,17 @@ def tune(
             "--processed-data-home",
             "-p",
             help="Processed data directory (overrides config)",
+            show_default=False,
         ),
     ] = ...,
     output_home: Annotated[
         Optional[str],
-        typer.Option("--output-home", "-o", help="Output directory for trained models"),
+        typer.Option(
+            "--output-home",
+            "-o",
+            help="Output directory for trained models",
+            show_default=False,
+        ),
     ] = ...,
     verbose: Annotated[
         bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
@@ -122,6 +129,7 @@ def extract(
             "--extraction-config",
             "-e",
             help="Extraction configuration file (overrides default)",
+            show_default=False,
         ),
     ] = None,
     processed_data_home: Annotated[
@@ -141,6 +149,7 @@ def extract(
             "-o",
             help="Output directory for extracted features, "
             "defaults to processed-data-home",
+            show_default=False,
         ),
     ] = None,
     all_times: Annotated[
@@ -179,6 +188,7 @@ def generative_score(
             "--scoring-config",
             "-s",
             help="Scoring configuration file (overrides default)",
+            show_default=False,
         ),
     ] = None,
     processed_data_home: Annotated[
@@ -230,6 +240,7 @@ def rep_based_score(
             "--scoring-config",
             "-s",
             help="Scoring configuration file (overrides default)",
+            show_default=False,
         ),
     ] = None,
     processed_data_home: Annotated[
@@ -248,6 +259,7 @@ def rep_based_score(
             "--output-home",
             "-o",
             help="Output directory for scores, defaults to processed-data-home",
+            show_default=False,
         ),
     ] = None,
     estimator_type: Annotated[

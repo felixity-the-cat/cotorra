@@ -130,7 +130,10 @@ class RepBasedScorer(Configurable):
                     "Using logistic regression classifier with cross-validation"
                 )
                 mdl = skl.linear_model.LogisticRegressionCV(
-                    n_jobs=-1, scoring="roc_auc", max_iter=10_000
+                    n_jobs=-1,
+                    scoring="roc_auc",
+                    max_iter=10_000,
+                    use_legacy_attributes=False,
                 )
             case "logistic-cv-z" | "lr-cv-z":
                 self.logger.info(
@@ -140,7 +143,10 @@ class RepBasedScorer(Configurable):
                 mdl = skl.pipeline.make_pipeline(
                     skl.preprocessing.StandardScaler(),
                     skl.linear_model.LogisticRegressionCV(
-                        n_jobs=-1, scoring="roc_auc", max_iter=10_000
+                        n_jobs=-1,
+                        scoring="roc_auc",
+                        max_iter=10_000,
+                        use_legacy_attributes=False,
                     ),
                 )
             case "k-nn" | "knn" | "k_nn":

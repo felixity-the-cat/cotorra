@@ -345,9 +345,11 @@ with commands:
   │    --output-home         -o      TEXT                 Output directory for  │
   │                                                       scores, defaults to   │
   │                                                       processed-data-home   │
-  │    --estimator                   [k-NN|lightGBM|logi  Estimator to use for  │
-  │                                  stic|logistic-CV|XG  rep-based scoring     │
-  │                                  Boost]               [default: lightGBM]   │
+  │                                                       [default: None]       │
+  │    --estimator           -e      [k-NN|lightGBM|logi  Estimator to use for  │
+  │                                  stic|logistic-z|log  rep-based scoring     │
+  │                                  istic-CV|logistic-C  [default: lightGBM]   │
+  │                                  V-z|XGBoost]                               │
   │    --verbose             -v                           Verbose logging       │
   │    --help                -h                           Show this message and │
   │                                                       exit.                 │
