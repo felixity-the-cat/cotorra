@@ -173,6 +173,16 @@ Used by `cotorra train` and `cotorra tune`.
   [`hyperparameter_search`](https://huggingface.co/docs/transformers/hpo_train?backends=Optuna)
   when `cotorra tune` is called.
 
+We wrap [opacus](https://opacus.ai) to support training with differential privacy
+(see `training-private` below). The following relevant parameters can be modified
+in the configuration:
+
+```
+privacy_parameters:
+  noise_multiplier: !!float 1.0
+  max_grad_norm: !!float 1.0
+```
+
 ### Extraction configuration ([example](src/cotorra/config/extraction.yaml))
 
 Used by `cotorra extract`.
@@ -218,14 +228,16 @@ We provide a CLI:
  Configurable training for generative event models (vXX.X.X)
 
 ╭─ Options ───────────────────────────────────────────────────────────────────╮
-│ --install-completion          Install completion for the current shell.     │
-│ --show-completion             Show completion for the current shell, to     │
-│                               copy it or customize the installation.        │
-│ --help                        Show this message and exit.                   │
+│ --install-completion            Install completion for the current shell.   │
+│ --show-completion               Show completion for the current shell, to   │
+│                                 copy it or customize the installation.      │
+│ --help                -h        Show this message and exit.                 │
 ╰─────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ──────────────────────────────────────────────────────────────────╮
 │ train             Train a model on tokenized data. For tokenization,        │
 │                   consult the cocoa package.                                │
+│ train-private     Train a model with differential privacy on tokenized      │
+│                   data.                                                     │
 │ tune              Run hyperparameter tuning while training a model.         │
 │ extract           Extract representations from a trained model.             │
 │ generative-score  Generate SCORE/REACH metrics from a trained model and     │
@@ -254,7 +266,7 @@ with commands:
   │                                         [required]                          │
   │ *  --output-home          -o      TEXT  Output directory for trained models │
   │                                         [required]                          │
-  │    --verbose              -v            Verbose logging         │
+  │    --verbose              -v            Verbose logging                     │
   │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
@@ -353,6 +365,26 @@ with commands:
   │    --verbose             -v                           Verbose logging       │
   │    --help                -h                           Show this message and │
   │                                                       exit.                 │
+  ╰─────────────────────────────────────────────────────────────────────────────╯
+  ```
+
+- [new] `cotorra train-private`
+
+  ```
+  Usage: cotorra train-private [OPTIONS]
+
+  Train a model with differential privacy on tokenized data.
+
+  ╭─ Options ───────────────────────────────────────────────────────────────────╮
+  │    --training-config      -t      PATH  Training configuration file         │
+  │                                         (overrides default)                 │
+  │ *  --processed-data-home  -p      TEXT  Processed data directory (overrides │
+  │                                         config)                             │
+  │                                         [required]                          │
+  │ *  --output-home          -o      TEXT  Output directory for trained models │
+  │                                         [required]                          │
+  │    --verbose              -v            Verbose logging                     │
+  │    --help                 -h            Show this message and exit.         │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 

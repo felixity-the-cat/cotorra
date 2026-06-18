@@ -64,9 +64,10 @@ class Trainer(Configurable):
         )
         self.run_name = self.cfg.get("run_name", self.cfg.wandb.get("run_name", ""))
         self.loader = Loader(training_cfg, self.processed_data_home)
+        self.model = self.model_init()
 
         self.trainer = TrainerWithCustomLoss(
-            model_init=self.model_init,
+            model=self.model,
             data_collator=self.collate_fn,
             compute_loss_func=self.loss,
             train_dataset=self.loader.get_train_data(),
@@ -130,5 +131,5 @@ if __name__ == "__main__":
     self = Trainer(
         processed_data_home="./processed/mimic", output_home="./output/mimic"
     )
-    # self.train(verbose=True)
-    breakpoint()
+    self.train(verbose=True)
+    # breakpoint()
