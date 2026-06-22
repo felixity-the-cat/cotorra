@@ -5,12 +5,15 @@ differentially privately train a model
 """
 
 import pathlib
+import warnings
 
 import opacus
 from omegaconf import OmegaConf
 from transformers import TrainingArguments
 
 from cotorra.trainer import Trainer, TrainerWithCustomLoss
+
+warnings.filterwarnings("ignore", message=".*Full backward hook.*")
 
 
 class TrainerWithCustomLossDP(TrainerWithCustomLoss):
@@ -41,6 +44,37 @@ class TrainerWithCustomLossDP(TrainerWithCustomLoss):
 
         self.accelerator.backward(loss)
         return loss.detach()
+
+    def _save(self, output_dir, state_dict=None):
+        """Override _save to unwrap the DP model before saving checkpoints."""
+        # Temporarily unwrap the model for saving
+        original_model = self.model
+        if hasattr(self.model, "_module"):
+            self.model = self.model._module
+
+        # Call parent's save method
+        super()._save(output_dir, state_dict)
+
+        # Restore the wrapped model
+        self.model = original_model
+
+    def _load_best_model(self):
+        """Override _load_best_model to unwrap the DP model before loading."""
+        # Temporarily unwrap the model for loading
+        original_model = self.model
+        if hasattr(self.model, "_module"):
+            self.model = self.model._module
+
+        # Call parent's load method
+        super()._load_best_model()
+
+        # Re-wrap the model with GradSampleModule if it was wrapped
+        if hasattr(original_model, "_module"):
+            # The model has been reloaded, we need to re-wrap it
+            # But actually we're done training at this point, so we can leave it unwrapped
+            pass
+        else:
+            self.model = original_model
 
 
 class TrainerDP(Trainer):
@@ -96,6 +130,15 @@ class TrainerDP(Trainer):
         """Override train to properly handle saving the DP-wrapped model."""
         self.trainer.train()
 
+        self.logger.info("For (epsilon, delta)-differential privacy:")
+        for delta in [1e-5, 1e-4, 1e-3]:
+            self.logger.info(
+                "delta={delta} gives epsilon={epsilon:.3e}".format(
+                    delta=delta,
+                    epsilon=self.privacy_engine.accountant.get_epsilon(delta=delta),
+                )
+            )
+
         # Unwrap the model from GradSampleModule before saving
         unwrapped_model = self.trainer.model._module
         unwrapped_model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
@@ -113,7 +156,7 @@ class TrainerDP(Trainer):
 
 if __name__ == "__main__":
     self = TrainerDP(
-        processed_data_home="./processed/mimic", output_home="./output/mimic"
+        processed_data_home="./processed/ucmc", output_home="./output/ucmc"
     )
-    # self.train(verbose=True)
-    breakpoint()
+    self.train(verbose=True)
+    # breakpoint()
