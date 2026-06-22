@@ -7,7 +7,8 @@ differentially privately train a model
 import pathlib
 
 import opacus
-from transformers import EarlyStoppingCallback, TrainingArguments
+from omegaconf import OmegaConf
+from transformers import TrainingArguments
 
 from cotorra.trainer import Trainer, TrainerWithCustomLoss
 
@@ -66,7 +67,6 @@ class TrainerDP(Trainer):
             args=TrainingArguments(
                 output_dir=str(self.output_home), **self.cfg.training_args
             ),
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
         )
 
         self.trainer.create_optimizer()
@@ -91,6 +91,24 @@ class TrainerDP(Trainer):
         self.trainer.set_dp_train_dataloader(dp_dataloader)
         self.model = self.trainer.model
         self.privacy_engine = privacy_engine
+
+    def train(self, verbose=False):
+        """Override train to properly handle saving the DP-wrapped model."""
+        self.trainer.train()
+
+        # Unwrap the model from GradSampleModule before saving
+        unwrapped_model = self.trainer.model._module
+        unwrapped_model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
+
+        with open(self.output_home / f"mdl-{self.run_name}-training.yaml", "w") as f:
+            f.write(OmegaConf.to_yaml(self.cfg))
+
+        if verbose:
+            self.logger.summarize_trained_model(
+                model=unwrapped_model,
+                bos_token_id=self.tkzr_cfg.lookup["BOS"],
+                reverse={v: k for k, v in self.tkzr_cfg.lookup.items()},
+            )
 
 
 if __name__ == "__main__":

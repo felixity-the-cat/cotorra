@@ -71,5 +71,5 @@ tuning_args:
   n_trials: !!int 10
 
 privacy_parameters:
-  noise_multiplier: !!float 1.0
+  noise_multiplier: !!float 1.5
   max_grad_norm: !!float 1.0
