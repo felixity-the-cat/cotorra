@@ -4,6 +4,7 @@
 differentially privately train a model
 """
 
+import contextlib
 import pathlib
 import warnings
 
@@ -45,36 +46,22 @@ class TrainerWithCustomLossDP(TrainerWithCustomLoss):
         self.accelerator.backward(loss)
         return loss.detach()
 
+    @contextlib.contextmanager
+    def _unwrapped_model(self):
+        """Temporarily expose the inner module, bypassing the DP wrapper."""
+        wrapped, self.model = self.model, getattr(self.model, "_module", self.model)
+        try:
+            yield
+        finally:
+            self.model = wrapped
+
     def _save(self, output_dir, state_dict=None):
-        """Override _save to unwrap the DP model before saving checkpoints."""
-        # Temporarily unwrap the model for saving
-        original_model = self.model
-        if hasattr(self.model, "_module"):
-            self.model = self.model._module
-
-        # Call parent's save method
-        super()._save(output_dir, state_dict)
-
-        # Restore the wrapped model
-        self.model = original_model
+        with self._unwrapped_model():
+            super()._save(output_dir, state_dict)
 
     def _load_best_model(self):
-        """Override _load_best_model to unwrap the DP model before loading."""
-        # Temporarily unwrap the model for loading
-        original_model = self.model
-        if hasattr(self.model, "_module"):
-            self.model = self.model._module
-
-        # Call parent's load method
-        super()._load_best_model()
-
-        # Re-wrap the model with GradSampleModule if it was wrapped
-        if hasattr(original_model, "_module"):
-            # The model has been reloaded, we need to re-wrap it
-            # But actually we're done training at this point, so we can leave it unwrapped
-            pass
-        else:
-            self.model = original_model
+        with self._unwrapped_model():
+            super()._load_best_model()
 
 
 class TrainerDP(Trainer):
