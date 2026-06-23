@@ -9,12 +9,7 @@ import pathlib
 
 import torch as t
 from omegaconf import OmegaConf
-from transformers import (
-    AutoConfig,
-    AutoModelForCausalLM,
-    EarlyStoppingCallback,
-    TrainingArguments,
-)
+from transformers import AutoConfig, AutoModelForCausalLM, TrainingArguments
 from transformers import Trainer as t_Trainer
 
 from cotorra.configurable import Configurable
@@ -74,7 +69,6 @@ class Trainer(Configurable):
             args=TrainingArguments(
                 output_dir=str(self.output_home), **self.cfg.training_args
             ),
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
         )
         self.model = self.trainer.model
 

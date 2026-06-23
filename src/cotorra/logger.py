@@ -89,3 +89,4 @@ class Logger(logging.Logger):
 if __name__ == "__main__":
     self = Logger()
     self.info("Testing...")
+    # breakpoint()
