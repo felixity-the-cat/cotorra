@@ -174,8 +174,8 @@ Used by `cotorra train` and `cotorra tune`.
   when `cotorra tune` is called.
 
 We wrap [opacus](https://opacus.ai) to support training with differential privacy
-(see `train-private` below). The following relevant parameters can be modified
-in the configuration:
+(see `train-private` below). The following relevant parameters can be modified in
+the configuration:
 
 ```
 privacy_parameters:
@@ -368,7 +368,7 @@ with commands:
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
-- [new] `cotorra train-private`
+- `cotorra train-private`
 
   ```
   Usage: cotorra train-private [OPTIONS]
@@ -376,15 +376,20 @@ with commands:
   Train a model with differential privacy on tokenized data.
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --training-config      -t      PATH  Training configuration file         │
-  │                                         (overrides default)                 │
-  │ *  --processed-data-home  -p      TEXT  Processed data directory (overrides │
-  │                                         config)                             │
-  │                                         [required]                          │
-  │ *  --output-home          -o      TEXT  Output directory for trained models │
-  │                                         [required]                          │
-  │    --verbose              -v            Verbose logging                     │
-  │    --help                 -h            Show this message and exit.         │
+  │    --training-config      -t      PATH   Training configuration file        │
+  │                                          (overrides default)                │
+  │ *  --processed-data-home  -p      TEXT   Processed data directory           │
+  │                                          (overrides config)                 │
+  │                                          [required]                         │
+  │ *  --output-home          -o      TEXT   Output directory for trained       │
+  │                                          models                             │
+  │                                          [required]                         │
+  │    --noise-multiplier     -n      FLOAT  Noise multiplier (overrides        │
+  │                                          configuration)                     │
+  │    --max-grad-norm        -m      FLOAT  Max grad norm (overrides           │
+  │                                          configuration)                     │
+  │    --verbose              -v             Verbose logging                    │
+  │    --help                 -h             Show this message and exit.        │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
