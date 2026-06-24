@@ -70,12 +70,22 @@ class TrainerDP(Trainer):
         training_cfg: pathlib.Path | str = None,
         processed_data_home: pathlib.Path | str = None,
         output_home: pathlib.Path | str = None,
+        noise_multiplier: float = None,
+        max_grad_norm: float = None,
         **kwargs,
     ):
         super().__init__(
             training_cfg=training_cfg,
             processed_data_home=processed_data_home,
             output_home=output_home,
+            privacy_parameters={
+                k: v
+                for k, v in {
+                    "noise_multiplier": noise_multiplier,
+                    "max_grad_norm": max_grad_norm,
+                }.items()
+                if v is not None
+            },
             **kwargs,
         )
 
@@ -95,16 +105,19 @@ class TrainerDP(Trainer):
         # HuggingFace Trainer calls get_train_dataloader() internally, so we must
         # ensure get_train_dataloader() returns the Opacus-wrapped DataLoader.
         privacy_engine = opacus.PrivacyEngine()
+        noise_multiplier = self.cfg.get("privacy_parameters", {}).get(
+            "noise_multiplier", 1.0
+        )
+        max_grad_norm = self.cfg.get("privacy_parameters", {}).get("max_grad_norm", 1.0)
+        self.logger.info(
+            f"Making private with {noise_multiplier=} and {max_grad_norm=}"
+        )
         dp_model, dp_optimizer, dp_dataloader = privacy_engine.make_private(
             module=self.trainer.model,
             optimizer=self.trainer.optimizer,
             data_loader=self.trainer.get_train_dataloader(),
-            noise_multiplier=self.cfg.get("privacy_parameters", {}).get(
-                "noise_multiplier", 1.0
-            ),
-            max_grad_norm=self.cfg.get("privacy_parameters", {}).get(
-                "max_grad_norm", 1.0
-            ),
+            noise_multiplier=noise_multiplier,
+            max_grad_norm=max_grad_norm,
             poisson_sampling=False,
         )
         self.trainer.model = dp_model
@@ -143,7 +156,9 @@ class TrainerDP(Trainer):
 
 if __name__ == "__main__":
     self = TrainerDP(
-        processed_data_home="./processed/ucmc", output_home="./output/ucmc"
+        processed_data_home="./processed/ucmc",
+        output_home="./output/ucmc",
+        noise_multiplier=0.1,
     )
     self.train(verbose=True)
     # breakpoint()

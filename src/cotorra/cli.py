@@ -95,6 +95,24 @@ def train_private(
         Optional[str],
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
     ] = ...,
+    noise_multiplier: Annotated[
+        Optional[float],
+        typer.Option(
+            "--noise-multiplier",
+            "-n",
+            help="Noise multiplier (overrides configuration)",
+            show_default=False,
+        ),
+    ] = None,
+    max_grad_norm: Annotated[
+        Optional[float],
+        typer.Option(
+            "--max-grad-norm",
+            "-m",
+            help="Max grad norm (overrides configuration)",
+            show_default=False,
+        ),
+    ] = None,
     verbose: Annotated[
         bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
@@ -110,6 +128,8 @@ def train_private(
             training_cfg=training_config,
             processed_data_home=processed_data_home,
             output_home=output_home,
+            noise_multiplier=noise_multiplier,
+            max_grad_norm=max_grad_norm,
         )
         trainer.train(verbose=verbose)
         t1 = time.perf_counter()
