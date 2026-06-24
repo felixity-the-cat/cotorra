@@ -70,8 +70,8 @@ class TrainerDP(Trainer):
         training_cfg: pathlib.Path | str = None,
         processed_data_home: pathlib.Path | str = None,
         output_home: pathlib.Path | str = None,
-        noise_multiplier: float = None,
-        max_grad_norm: float = None,
+        noise_multiplier: float | None = None,
+        max_grad_norm: float | None = None,
         **kwargs,
     ):
         super().__init__(
