@@ -54,6 +54,7 @@ def bootstrap_ci(
         "brier",
     ),
     n_jobs: int = -1,
+    stratified: bool = False,
 ) -> dict[str, np.ndarray]:
     """
     Calculates a bootstrapped percentile interval for objectives `objs` as
@@ -64,10 +65,15 @@ def bootstrap_ci(
 
     def get_scores_i(rng_i: Generator) -> dict[str, float]:
         warnings.filterwarnings("ignore")
-        yti = y_true[
-            samp_i := rng_i.choice(len(y_true), size=len(y_true), replace=True)
-        ]
-        ysi = y_score[samp_i]
+        if stratified:
+            pos = np.flatnonzero(y_true.astype(int))
+            neg = np.flatnonzero(1 - (y_true).astype(int))
+            samp_pos = rng_i.choice(pos, size=len(pos), replace=True)
+            samp_neg = rng_i.choice(neg, size=len(neg), replace=True)
+            samp_i = rng_i.permutation(np.concatenate([samp_pos, samp_neg]))
+        else:
+            samp_i = rng_i.choice(len(y_true), size=len(y_true), replace=True)
+        yti, ysi = y_true[samp_i], y_score[samp_i]
         ret = dict()
         if "roc_auc" in metrics:
             ret["roc_auc"] = skl_mets.roc_auc_score(yti, ysi)
