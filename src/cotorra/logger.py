@@ -79,9 +79,12 @@ class Logger(logging.Logger):
                     )
                     if (nf := np.sum(~np.isfinite(y_score[y_qual.astype(bool)]))) > 0:
                         self.warning(f"{nf} non-finite {method} estimates for {tt}.")
+                    if v_rare := y_true[y_qual.astype(bool)].mean().item() < 0.001:
+                        self.warning("using stratified sampling due to rarity")
                     for k, v in bootstrap_ci(
                         y_true[y_qual.astype(bool)],
                         np.nan_to_num(y_score)[y_qual.astype(bool)],
+                        stratified=v_rare,
                     ).items():
                         self.info("{k:<7}: {v}".format(k=k, v=v.round(3)))
 

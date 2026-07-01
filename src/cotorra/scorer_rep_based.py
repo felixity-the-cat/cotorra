@@ -134,6 +134,7 @@ class RepBasedScorer(Configurable):
                     scoring="roc_auc",
                     max_iter=10_000,
                     use_legacy_attributes=False,
+                    l1_ratios=(0,),
                 )
             case "logistic-cv-z" | "lr-cv-z":
                 self.logger.info(
@@ -147,6 +148,7 @@ class RepBasedScorer(Configurable):
                         scoring="roc_auc",
                         max_iter=10_000,
                         use_legacy_attributes=False,
+                        l1_ratios=(0,),  # suppresses a warning
                     ),
                 )
             case "k-nn" | "knn" | "k_nn":
