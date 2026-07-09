@@ -14,7 +14,7 @@ margin: 0 auto; -webkit-mask-image: radial-gradient(
 
 # Cotorra: a configurable trainer
 
-![PyPI Version](https://img.shields.io/pypi/v/cotorra)
+[![PyPI Version](https://img.shields.io/pypi/v/cotorra)](https://pypi.org/project/cotorra/)
 [![DOI](https://raw.githubusercontent.com/burkh4rt/cotorra/master/img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
 [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
 
