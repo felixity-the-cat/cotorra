@@ -183,17 +183,26 @@ Used by `cotorra train` and `cotorra tune`.
 
 We offer the following presents
 
-| designator     | base model                | # params w/ ~1.4k vocab |
-| -------------- | ------------------------- | ----------------------- |
-| `llama_32`     | `meta-llama/Llama-3.2-1B` | ~76.9M                  |
-| `llama_32_mid` | `meta-llama/Llama-3.2-1B` | ~8.2M                   |
-| `qwen_3`       | `Qwen/Qwen3-1.7B-Base`    | ~74.1M                  |
-| `qwen_3_mid`   | `Qwen/Qwen3-1.7B-Base`    | ~8.4M                   |
-| `gemma_3`      | `google/gemma-3-1b-pt`    | ~75.7M                  |
-| `gemma_3_mid`  | `google/gemma-3-1b-pt`    | ~7.8M                   |
+| designator     | base model                | # params w/ ~1340-token vocab |
+| -------------- | ------------------------- | ----------------------------- |
+| `llama_32`     | `meta-llama/Llama-3.2-1B` | ~76.9M                        |
+| `llama_32_mid` | `meta-llama/Llama-3.2-1B` | ~8.2M                         |
+| `qwen_3`       | `Qwen/Qwen3-1.7B-Base`    | ~74.1M                        |
+| `qwen_3_mid`   | `Qwen/Qwen3-1.7B-Base`    | ~8.4M                         |
+| `gemma_3`      | `google/gemma-3-1b-pt`    | ~75.7M                        |
+| `gemma_3_mid`  | `google/gemma-3-1b-pt`    | ~7.8M                         |
 
 Use the `model` key to select one of these presets and then override any
 individual `model_args` entries as needed.
+
+<!-- prettier-ignore-start -->
+> [!TIP]
+> Training supports the `--resume-from-checkpoint` (`-r`) flag. When set,
+> `cotorra train` will attempt to resume from the latest HuggingFace checkpoint
+> saved under `--output-home`. If no checkpoint is found (or resumption fails),
+> it automatically falls back to training from scratch — so the flag is safe to
+> pass unconditionally in scripts.
+<!-- prettier-ignore-end -->
 
 #### Differential privacy
 
@@ -283,15 +292,17 @@ with commands:
   Train a model on tokenized data. For tokenization, consult the cocoa package.
 
   ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --training-config      -t      PATH  Training configuration file         │
-  │                                         (overrides default)                 │
-  │ *  --processed-data-home  -p      TEXT  Processed data directory (overrides │
-  │                                         config)                             │
-  │                                         [required]                          │
-  │ *  --output-home          -o      TEXT  Output directory for trained models │
-  │                                         [required]                          │
-  │    --verbose              -v            Verbose logging                     │
-  │    --help                 -h            Show this message and exit.         │
+  │    --training-config         -t      PATH  Training configuration file      │
+  │                                            (overrides default)              │
+  │ *  --processed-data-home     -p      TEXT  Processed data directory         │
+  │                                            (overrides config)               │
+  │                                            [required]                       │
+  │ *  --output-home             -o      TEXT  Output directory for trained     │
+  │                                            models                           │
+  │                                            [required]                       │
+  │    --resume-from-checkpoint  -r            Try to resume from checkpoint?   │
+  │    --verbose                 -v            Verbose logging                  │
+  │    --help                    -h            Show this message and exit.      │
   ╰─────────────────────────────────────────────────────────────────────────────╯
   ```
 
@@ -477,8 +488,10 @@ for d in data-raw processed; do ln -s /mnt/bbj-lab/users/burkh4rt/$d $d; done
 ds='mimic-icu'
 cotorra train \
 		--training-config src/cotorra/config/training.yaml \
-		--processed-data-home processed/${ds} \
-		--output-home output/${ds}
+		--processed-data-home processed/mimic-icu \
+		--output-home output/test \
+    --resume-from-checkpoint \
+    --verbose
 ```
 
 Send to randi:

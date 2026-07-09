@@ -109,8 +109,17 @@ class Trainer(Configurable):
             p_ids += t.arange(p_ids.shape[-1], device=p_ids.device, dtype=p_ids.dtype)
             return {"input_ids": input_ids, "labels": input_ids, "position_ids": p_ids}
 
-    def train(self, verbose=False):
-        self.trainer.train()
+    def train(self, resume_from_checkpoint: bool = False, verbose: bool = False):
+        if resume_from_checkpoint:
+            try:
+                self.trainer.train(resume_from_checkpoint=True)
+            except Exception as e:
+                self.logger.warning(f"Encountered {e} on resume from checkpoint.")
+            finally:
+                self.trainer.train(resume_from_checkpoint=False)
+        else:
+            self.trainer.train(resume_from_checkpoint=False)
+
         self.trainer.model.save_pretrained(self.output_home / f"mdl-{self.run_name}")
 
         with open(self.output_home / f"mdl-{self.run_name}-training.yaml", "w") as f:
