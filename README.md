@@ -201,7 +201,9 @@ individual `model_args` entries as needed.
 > `cotorra train` will attempt to resume from the latest HuggingFace checkpoint
 > saved under `--output-home`. If no checkpoint is found (or resumption fails),
 > it automatically falls back to training from scratch — so the flag is safe to
-> pass unconditionally in scripts.
+> pass unconditionally in scripts. Use `save_steps` in `training_args` in the
+> [training.yaml](src/cotorra/config/training.yaml) file to control the frequency
+> of checkpointing.
 <!-- prettier-ignore-end -->
 
 #### Differential privacy

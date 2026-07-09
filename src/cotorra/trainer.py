@@ -115,7 +115,6 @@ class Trainer(Configurable):
                 self.trainer.train(resume_from_checkpoint=True)
             except Exception as e:
                 self.logger.warning(f"Encountered {e} on resume from checkpoint.")
-            finally:
                 self.trainer.train(resume_from_checkpoint=False)
         else:
             self.trainer.train(resume_from_checkpoint=False)
