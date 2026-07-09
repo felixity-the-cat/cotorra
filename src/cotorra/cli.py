@@ -51,6 +51,15 @@ def train(
         Optional[str],
         typer.Option("--output-home", "-o", help="Output directory for trained models"),
     ] = ...,
+    resume_from_checkpoint: Annotated[
+        bool,
+        typer.Option(
+            "--resume-from-checkpoint",
+            "-r",
+            help="Try to resume training from the latest checkpoint in --output-home.",
+            is_flag=True,
+        ),
+    ] = False,
     verbose: Annotated[
         bool, typer.Option("--verbose", "-v", help="Verbose logging", is_flag=True)
     ] = False,
@@ -65,7 +74,7 @@ def train(
             processed_data_home=processed_data_home,
             output_home=output_home,
         )
-        trainer.train(verbose=verbose)
+        trainer.train(resume_from_checkpoint=resume_from_checkpoint, verbose=verbose)
         t1 = time.perf_counter()
         print(f"\n[green]✓[/green] Training completed in {t1 - t0:.2f}s.")
         out_path = trainer.output_home / f"mdl-{trainer.cfg.run_name}"
