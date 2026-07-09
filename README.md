@@ -302,7 +302,9 @@ with commands:
   │ *  --output-home             -o      TEXT  Output directory for trained     │
   │                                            models                           │
   │                                            [required]                       │
-  │    --resume-from-checkpoint  -r            Try to resume from checkpoint?   │
+  │    --resume-from-checkpoint  -r            Try to resume training from the  │
+  │                                            latest checkpoint in             │
+  │                                            --output-home.                   │
   │    --verbose                 -v            Verbose logging                  │
   │    --help                    -h            Show this message and exit.      │
   ╰─────────────────────────────────────────────────────────────────────────────╯
