@@ -140,10 +140,36 @@ YAML config via OmegaConf.
 
 Used by `cotorra train` and `cotorra tune`.
 
-- **model_name**: Name or path of the HuggingFace model (e.g.,
-  `meta-llama/Llama-3.2-1B`).
-- **model_args**: Model architecture parameters passed directly to HuggingFace's
-  [`AutoConfig`](https://huggingface.co/docs/transformers/en/model_doc/auto).
+- **model**:
+  - **model_name**: Name or path of the HuggingFace model (e.g.,
+    `meta-llama/Llama-3.2-1B`).
+  - **model_args**: Model architecture parameters passed directly to
+    HuggingFace's
+    [`AutoConfig`](https://huggingface.co/docs/transformers/en/model_doc/auto).
+
+The bundled config defines reusable model presets under `model_presets`:
+
+- **llama_32**: `meta-llama/Llama-3.2-1B` with `hidden_size: 1024`,
+  `intermediate_size: 2048`, `num_hidden_layers: 9`, `num_attention_heads: 8`
+  (roughly 76.9M parameters with the default vocabulary size).
+- **llama_32_mid**: `meta-llama/Llama-3.2-1B` with `hidden_size: 256`,
+  `intermediate_size: 1024`, `num_hidden_layers: 6`, `num_attention_heads: 8`,
+  `max_position_embeddings: 32768` (roughly 8.2M parameters).
+- **qwen_3**: `Qwen/Qwen3-1.7B-Base` with `hidden_size: 512`,
+  `intermediate_size: 1024`, `num_attention_heads: 4`, `num_key_value_heads: 4`
+  (roughly 74.1M parameters).
+- **qwen_3_mid**: `Qwen/Qwen3-1.7B-Base` with `hidden_size: 128`,
+  `intermediate_size: 256`, `num_attention_heads: 4`, `num_key_value_heads: 2`,
+  `max_position_embeddings: 32768` (roughly 8.4M parameters).
+- **gemma_3**: `google/gemma-3-1b-pt` with `hidden_size: 512`,
+  `intermediate_size: 1024` (roughly 75.7M parameters).
+- **gemma_3_mid**: `google/gemma-3-1b-pt` with `hidden_size: 128`,
+  `intermediate_size: 256`, `num_attention_heads: 2`, `num_key_value_heads: 1`,
+  `max_position_embeddings: 32768` (roughly 7.8M parameters).
+
+Use the `model` key to select one of these presets and then override any
+individual `model_args` entries as needed.
+
 - **max_seq_len**: Maximum sequence length for model input.
 - **n_epochs**: Number of epochs (handled in the dataloader, not the trainer).
 - **run_name**: Name for the current run (referenced by `wandb` and
@@ -438,12 +464,51 @@ Send to bbj-lab1:
 ```
 rsync -avht \
  --delete \
- --exclude "output/" \
- --exclude "wandb/" \
+ --exclude "processed" \
+ --exclude "data-raw" \
+ --exclude "output" \
+ --exclude "wandb" \
+ --exclude ".venv" \
+ --exclude ".idea" \
+ ~/Documents/chicago/cotorra \
+ bbj-lab1:~
+```
+
+```
+for d in data-raw processed; do ln -s /mnt/bbj-lab/users/burkh4rt/$d $d; done
+ds='mimic-icu'
+cotorra train \
+		--training-config src/cotorra/config/training.yaml \
+		--processed-data-home processed/${ds} \
+		--output-home output/${ds}
+```
+
+Send to randi:
+```
+for d in data-raw processed; do
+	ln -s /gpfs/data/bbj-lab/users/burkh4rt/$d $d
+done
+```
+```
+rsync -avh \
+ --exclude "output" \
+ --exclude "processed" \
+ --exclude "data-raw" \
+ --exclude "logs" \
+ --exclude "wandb" \
  --exclude ".venv/" \
  --exclude ".idea/" \
  ~/Documents/chicago/cotorra \
- bbj-lab1:~
+ randi:/gpfs/data/bbj-lab/users/burkh4rt
+```
+
+```
+srun -p gpuq \
+ --gres=gpu:1 \
+ --time=8:00:00 \
+ --job-name=adhoc \
+ --pty bash -i
+. .venv/bin/activate
 ```
 
 -->

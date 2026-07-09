@@ -84,14 +84,17 @@ class Trainer(Configurable):
             eos_token_id=self.tkzr_cfg.lookup.EOS,
         )
         config = AutoConfig.from_pretrained(
-            self.cfg.model_name, **conf_param, **self.cfg.model_args
+            self.cfg.model.model_name, **conf_param, **self.cfg.model.model_args
         )
         mdl = AutoModelForCausalLM.from_config(config)
         self.logger.info(
-            "Loaded model {name} with {num} params.".format(
-                name=self.cfg.model_name, num=sum(p.numel() for p in mdl.parameters())
+            "Loaded model {name} with {num} params ({dtype}).".format(
+                name=self.cfg.model.model_name,
+                num=sum(p.numel() for p in mdl.parameters()),
+                dtype=next(mdl.parameters()).dtype,
             )
         )
+
         return mdl
 
     def collate_fn(self, batch):
