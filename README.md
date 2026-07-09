@@ -147,28 +147,8 @@ Used by `cotorra train` and `cotorra tune`.
     HuggingFace's
     [`AutoConfig`](https://huggingface.co/docs/transformers/en/model_doc/auto).
 
-The bundled config defines reusable model presets under `model_presets`:
-
-- **llama_32**: `meta-llama/Llama-3.2-1B` with `hidden_size: 1024`,
-  `intermediate_size: 2048`, `num_hidden_layers: 9`, `num_attention_heads: 8`
-  (roughly 76.9M parameters with the default vocabulary size).
-- **llama_32_mid**: `meta-llama/Llama-3.2-1B` with `hidden_size: 256`,
-  `intermediate_size: 1024`, `num_hidden_layers: 6`, `num_attention_heads: 8`,
-  `max_position_embeddings: 32768` (roughly 8.2M parameters).
-- **qwen_3**: `Qwen/Qwen3-1.7B-Base` with `hidden_size: 512`,
-  `intermediate_size: 1024`, `num_attention_heads: 4`, `num_key_value_heads: 4`
-  (roughly 74.1M parameters).
-- **qwen_3_mid**: `Qwen/Qwen3-1.7B-Base` with `hidden_size: 128`,
-  `intermediate_size: 256`, `num_attention_heads: 4`, `num_key_value_heads: 2`,
-  `max_position_embeddings: 32768` (roughly 8.4M parameters).
-- **gemma_3**: `google/gemma-3-1b-pt` with `hidden_size: 512`,
-  `intermediate_size: 1024` (roughly 75.7M parameters).
-- **gemma_3_mid**: `google/gemma-3-1b-pt` with `hidden_size: 128`,
-  `intermediate_size: 256`, `num_attention_heads: 2`, `num_key_value_heads: 1`,
-  `max_position_embeddings: 32768` (roughly 7.8M parameters).
-
-Use the `model` key to select one of these presets and then override any
-individual `model_args` entries as needed.
+  _Note: The bundled config defines reusable model presets under
+  `model_presets`._
 
 - **max_seq_len**: Maximum sequence length for model input.
 - **n_epochs**: Number of epochs (handled in the dataloader, not the trainer).
@@ -198,6 +178,24 @@ individual `model_args` entries as needed.
 - **tuning_args**: Arguments passed to HuggingFace's
   [`hyperparameter_search`](https://huggingface.co/docs/transformers/hpo_train?backends=Optuna)
   when `cotorra tune` is called.
+
+#### Model presets
+
+We offer the following presents
+
+| designator     | base model                | # params w/ ~1.4k vocab |
+| -------------- | ------------------------- | ----------------------- |
+| `llama_32`     | `meta-llama/Llama-3.2-1B` | ~76.9M                  |
+| `llama_32_mid` | `meta-llama/Llama-3.2-1B` | ~8.2M                   |
+| `qwen_3`       | `Qwen/Qwen3-1.7B-Base`    | ~74.1M                  |
+| `qwen_3_mid`   | `Qwen/Qwen3-1.7B-Base`    | ~8.4M                   |
+| `gemma_3`      | `google/gemma-3-1b-pt`    | ~75.7M                  |
+| `gemma_3_mid`  | `google/gemma-3-1b-pt`    | ~7.8M                   |
+
+Use the `model` key to select one of these presets and then override any
+individual `model_args` entries as needed.
+
+#### Differential privacy
 
 We wrap [opacus](https://opacus.ai) to support training with differential privacy
 (see `train-private` below). The following relevant parameters can be modified in
