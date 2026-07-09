@@ -56,7 +56,7 @@ def train(
         typer.Option(
             "--resume-from-checkpoint",
             "-r",
-            help="Try to resume from checkpoint?",
+            help="Try to resume training from the latest checkpoint in --output-home.",
             is_flag=True,
         ),
     ] = False,
