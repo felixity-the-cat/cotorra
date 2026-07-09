@@ -1,5 +1,5 @@
 <p align="center">
-<img src="img/cotorra.png" width="400" style="display: block;
+<img src="https://raw.githubusercontent.com/burkh4rt/cotorra/master/img/cotorra.png" width="400" style="display: block;
 margin: 0 auto; -webkit-mask-image: radial-gradient(
     ellipse at center,
     rgba(0,0,0,1) 50%,
@@ -14,7 +14,8 @@ margin: 0 auto; -webkit-mask-image: radial-gradient(
 
 # Cotorra: a configurable trainer
 
-[![DOI](img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
+![PyPI Version](https://img.shields.io/pypi/v/cotorra)
+[![DOI](https://raw.githubusercontent.com/burkh4rt/cotorra/master/img/1193885071.svg)](https://doi.org/10.5281/zenodo.20414127)
 [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/bbj-lab/cotorra/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/bbj-lab/cotorra)
 
 > 🦜 the wild parakeet of Chicago's south side
@@ -524,6 +525,15 @@ srun -p gpuq \
  --job-name=adhoc \
  --pty bash -i
 . .venv/bin/activate
+```
+
+Send to pypi:
+```
+rm -rf dist
+python3 -m pip install --upgrade build
+python3 -m build
+python3 -m pip install --upgrade twine
+python3 -m twine upload --repository pypi dist/*
 ```
 
 -->
