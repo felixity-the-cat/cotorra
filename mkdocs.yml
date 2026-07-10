@@ -10,20 +10,9 @@ theme:
   favicon: svg/emoji_u1f99c.svg
   font: false
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/weather-night
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/weather-sunny
-        name: Switch to light mode
+    scheme: default
+    primary: custom
+    accent: custom
   features:
     - navigation.instant
     - navigation.tracking
@@ -66,4 +55,8 @@ plugins:
 
 nav:
   - Home: index.md
-  - API Reference: api.md
+  - API Reference:
+      - Overview: api/index.md
+      - Training: api/training.md
+      - Extraction: api/extraction.md
+      - Scoring: api/scoring.md
