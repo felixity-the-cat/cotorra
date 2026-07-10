@@ -50,7 +50,9 @@
         cotorra = "cotorra.cli:main"
 
     [project.urls]
-        Repository = "https://github.com/bbj-lab/cotorra"
+        Documentation = "https://cotorra.readthedocs.io"
+        Issues        = "https://github.com/bbj-lab/cotorra/issues"
+        Repository    = "https://github.com/bbj-lab/cotorra"
 
     [project.optional-dependencies]
         all = [ "cotorra[dev,docs,gen]" ]

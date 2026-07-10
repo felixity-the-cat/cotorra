@@ -436,7 +436,7 @@ with commands:
 [^1]:
     L. Gersony, "The Quiet Victory of Chicago’s Monk Parakeets," _The Chicago
     Maroon_, 23 January 2022,
-    https://chicagomaroon.com/28830/grey-city/quiet-protest-chicagos-monk-parakeets/
+    [https://chicagomaroon.com/28830/grey-city/quiet-protest-chicagos-monk-parakeets/](https://chicagomaroon.com/28830/grey-city/quiet-protest-chicagos-monk-parakeets/)
 
 [^2]:
     M. Burkhart, B. Ramadan, Z. Liao, K. Chhikara, J. Rojas, W. Parker, & B.
