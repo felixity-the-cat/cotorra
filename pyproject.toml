@@ -50,15 +50,23 @@
         cotorra = "cotorra.cli:main"
 
     [project.urls]
-        Repository = "https://github.com/bbj-lab/cotorra"
+        Documentation = "https://cotorra.readthedocs.io"
+        Issues        = "https://github.com/bbj-lab/cotorra/issues"
+        Repository    = "https://github.com/bbj-lab/cotorra"
 
     [project.optional-dependencies]
-        all = [ "cotorra[dev,gen]" ]
+        all = [ "cotorra[dev,docs,gen]" ]
         dev = [ "pip", "ruff" ]
-        # gen = [
-        #     "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
-        #     "sglang",
-        # ]
+        docs = [
+            "mkdocs",
+            "mkdocs-material",
+            "mkdocstrings[python]",
+            "mkdocs-include-markdown-plugin",
+        ]
+        gen = [
+            "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
+            "sglang",
+        ]
 
 [build-system]
     build-backend = "setuptools.build_meta"

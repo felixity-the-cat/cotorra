@@ -137,7 +137,7 @@ override by passing a config file via the appropriate CLI flag. Any value can
 also be overridden programmatically via `**kwargs` which are merged on top of the
 YAML config via OmegaConf.
 
-### Training configuration ([example](src/cotorra/config/training.yaml))
+### Training configuration ([example](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/training.yaml))
 
 Used by `cotorra train` and `cotorra tune`.
 
@@ -203,7 +203,7 @@ individual `model_args` entries as needed.
 > saved under `--output-home`. If no checkpoint is found (or resumption fails),
 > it automatically falls back to training from scratch — so the flag is safe to
 > pass unconditionally in scripts. Use `save_steps` in `training_args` in the
-> [training.yaml](src/cotorra/config/training.yaml) file to control the frequency
+> [training.yaml](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/training.yaml) file to control the frequency
 > of checkpointing.
 <!-- prettier-ignore-end -->
 
@@ -219,7 +219,7 @@ privacy_parameters:
   max_grad_norm: !!float 1.0
 ```
 
-### Extraction configuration ([example](src/cotorra/config/extraction.yaml))
+### Extraction configuration ([example](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/extraction.yaml))
 
 Used by `cotorra extract`.
 
@@ -234,7 +234,7 @@ Used by `cotorra extract`.
   - **shard_size** _(optional)_: Number of samples per output parquet shard. Omit
     to write a single file per split.
 
-### Scoring configuration ([example](src/cotorra/config/scoring.yaml))
+### Scoring configuration ([example](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/scoring.yaml))
 
 Used by `cotorra generative-score` and `cotorra rep-based-score`.
 
@@ -436,7 +436,7 @@ with commands:
 [^1]:
     L. Gersony, "The Quiet Victory of Chicago’s Monk Parakeets," _The Chicago
     Maroon_, 23 January 2022,
-    https://chicagomaroon.com/28830/grey-city/quiet-protest-chicagos-monk-parakeets/
+    [https://chicagomaroon.com/28830/grey-city/quiet-protest-chicagos-monk-parakeets/](https://chicagomaroon.com/28830/grey-city/quiet-protest-chicagos-monk-parakeets/)
 
 [^2]:
     M. Burkhart, B. Ramadan, Z. Liao, K. Chhikara, J. Rojas, W. Parker, & B.
@@ -534,6 +534,12 @@ python3 -m pip install --upgrade build
 python3 -m build
 python3 -m pip install --upgrade twine
 python3 -m twine upload --repository pypi dist/*
+```
+
+Make docs:
+```
+mkdocs build
+mkdocs serve --dev-addr 127.0.0.1:8001
 ```
 
 -->
