@@ -5,7 +5,7 @@ three trainers read a `training.yaml` configuration, pull the training and
 validation splits out of the processed data, and wrap HuggingFace's `Trainer` so
 that sequences of event tokens are modeled autoregressively (each token predicts
 the next). Time-aware position ids for
-[time-based RoPE](../index.md#configuration) and a custom loss are wired in when
+[time-based RoPE](../index.md#1-training) and a custom loss are wired in when
 the configuration requests them. On completion the model weights and the exact
 configuration used are written to `output_home`.
 

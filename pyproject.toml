@@ -44,7 +44,7 @@
     name = "cotorra"
     readme = { file = "README.md", content-type = "text/markdown" }
     requires-python = ">=3.11"
-    version = "26.6.0"
+    version = "26.6.1"
 
     [project.scripts]
         cotorra = "cotorra.cli:main"
@@ -55,7 +55,7 @@
         Repository    = "https://github.com/bbj-lab/cotorra"
 
     [project.optional-dependencies]
-        all = [ "cotorra[dev,docs,gen]" ]
+        all = [ "cotorra[dev,docs]" ]
         dev = [ "pip", "ruff" ]
         docs = [
             "mkdocs",
@@ -63,10 +63,10 @@
             "mkdocstrings[python]",
             "mkdocs-include-markdown-plugin",
         ]
-        gen = [
-            "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
-            "sglang",
-        ]
+        # gen = [
+        #     "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
+        #     "sglang",
+        # ]
 
 [build-system]
     build-backend = "setuptools.build_meta"

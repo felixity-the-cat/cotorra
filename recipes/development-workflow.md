@@ -1,25 +1,5 @@
 ## Development workflow
 
-<details>
-
-<summary>0. Localize filenames by cluster.</summary>
-
-```sh
-case "$(uname -n)" in
-    cri*)
-        hm="/gpfs/data/bbj-lab/users/burkh4rt"
-        ;;
-    bbj-lab*)
-        hm="/mnt/bbj-lab/users/burkh4rt"
-        ;;
-    *)
-        echo "Unknown host $(uname -n)"
-        ;;
-esac
-```
-
-</details>
-
 1. We start with [MIMIC data](https://mimic.mit.edu) that's been converted to the
    [CLIF standard](https://clif-icu.com):
    https://physionet.org/content/mimic-iv-ext-clif. We first collate and tokenize
@@ -27,6 +7,7 @@ esac
 
     ```sh
     cocoa pipeline \
+        --raw-data-home /path/to/raw \
         --processed-data-home ./processed/dev \
         --verbose
     ```

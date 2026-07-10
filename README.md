@@ -29,9 +29,23 @@ south side of Chicago, where they have flourished. [^1] It benefits from previou
 experience training foundation models on tokenized electronic health records.
 [^2] [^3] [^4] [^5]
 
+Given a dataset of tokenized timelines, this package trains a model to predict
+the next token in a subject's timeline given their history up to that point, and
+then uses the trained model to extract representations and score outcomes of
+interest. It does all of this in a configurable way.
+
 ## Installation
 
-You can download and install this package as follows:
+Install the latest release from PyPI:
+
+```sh
+pip install "cotorra" \
+  --index-url https://download.pytorch.org/whl/cu128 \
+  --extra-index-url https://pypi.org/simple
+```
+
+This installs the `cotorra` command. To work from source instead (e.g. to use
+generative scoring or for development):
 
 ```sh
 git clone git@github.com:bbj-lab/cotorra.git
@@ -43,7 +57,7 @@ pip install -e ".[gen]" \
   --extra-index-url https://pypi.org/simple
 ```
 
-## Context
+## Inputs
 
 Suppose you have a dataset of tokenized timelines `tokens_times.parquet` as a
 parquet table with columns:
@@ -125,21 +139,30 @@ The `cocoa winnow` command provides these.
 > collator / tokenizer: [☕️ cocoa](https://github.com/bbj-lab/cocoa)
 <!-- prettier-ignore-end -->
 
-Given these things, we want to train a model to predict the next token in a
-subject's timeline given their complete history or context up to this point. This
-package is designed to do that in a configurable way.
+Each command below is driven by a YAML config. The package ships a default for
+each command under `src/cotorra/config/`, which you can override by passing a
+config file via the appropriate CLI flag.
 
-## Configuration
+## (1) Training
 
-This library can be extensively customized through yaml configuration files. Each
-command has its own default config under `src/cotorra/config/`, which you can
-override by passing a config file via the appropriate CLI flag. Any value can
-also be overridden programmatically via `**kwargs` which are merged on top of the
-YAML config via OmegaConf.
+The trainer consumes the tokenized timelines and fits a causal language model to
+predict the next token in each subject's timeline. It:
 
-### Training configuration ([example](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/training.yaml))
+1. Builds a next-token-prediction dataset from `tokens_times.parquet` and the
+   subject splits.
+2. Initializes a HuggingFace causal LM from a preset (or a custom architecture
+   config).
+3. Optionally applies custom losses that upweight quantile-boundary tokens or
+   tokens of clinical interest.
+4. Optionally uses time-aware rotary position embeddings so that position ids
+   reflect elapsed time rather than token index.
+5. Trains the model — optionally with differential privacy
+   (`cotorra train-private`) or hyperparameter tuning (`cotorra tune`) — and
+   saves it.
 
-Used by `cotorra train` and `cotorra tune`.
+Training is driven by a YAML config (the package ships a default; see
+[`./src/cotorra/config/training.yaml`](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/training.yaml))
+that specifies:
 
 - **model**:
     - **model_name**: Name or path of the HuggingFace model (e.g.,
@@ -180,9 +203,9 @@ Used by `cotorra train` and `cotorra tune`.
   [`hyperparameter_search`](https://huggingface.co/docs/transformers/hpo_train?backends=Optuna)
   when `cotorra tune` is called.
 
-#### Model presets
+### Model presets
 
-We offer the following presents
+We offer the following presets:
 
 | designator     | base model                | # params w/ ~1340-token vocab |
 | -------------- | ------------------------- | ----------------------------- |
@@ -207,21 +230,42 @@ individual `model_args` entries as needed.
 > of checkpointing.
 <!-- prettier-ignore-end -->
 
-#### Differential privacy
+### Differential privacy
 
 We wrap [opacus](https://opacus.ai) to support training with differential privacy
-(see `train-private` below). The following relevant parameters can be modified in
-the configuration:
+(see `cotorra train-private`). The following relevant parameters can be modified
+in the configuration:
 
-```
+```yaml
 privacy_parameters:
-  noise_multiplier: !!float 1.0
-  max_grad_norm: !!float 1.0
+    noise_multiplier: !!float 1.0
+    max_grad_norm: !!float 1.0
 ```
 
-### Extraction configuration ([example](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/extraction.yaml))
+### Outputs
 
-Used by `cotorra extract`.
+- `mdl-<run_name>/` — the trained model, saved under `--output-home` in
+  HuggingFace format (via `save_pretrained`), ready to be passed as
+  `--model-home` to `extract` and the scoring commands.
+- `mdl-<run_name>-training.yaml` — the resolved training configuration used for
+  the run.
+
+## (2) Extraction
+
+The extractor loads a trained model and computes hidden-state representations of
+each subject's context, suitable for representation-based scoring or downstream
+tasks. It:
+
+1. Loads the trained model from `--model-home` and the split-specific inference
+   tables.
+2. Runs the model over each subject's `tokens_past` context.
+3. Extracts the hidden-state representation at the final position by default, or
+   at all time steps when `--all-times` is set.
+4. Writes one feature table per split (optionally sharded).
+
+Extraction is driven by a YAML config (the package ships a default; see
+[`./src/cotorra/config/extraction.yaml`](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/extraction.yaml))
+that specifies:
 
 - **max_seq_len**: Maximum sequence length.
 - **time_based_rope** _(optional)_: Enables time-aware position ids during
@@ -234,9 +278,40 @@ Used by `cotorra extract`.
     - **shard_size** _(optional)_: Number of samples per output parquet shard.
       Omit to write a single file per split.
 
-### Scoring configuration ([example](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/scoring.yaml))
+### Outputs
 
-Used by `cotorra generative-score` and `cotorra rep-based-score`.
+- `features-<split>-<model_name>.parquet` — extracted representations for each
+  split (`train`, `tuning`, `held_out`). With `--all-times`, files are named
+  `features-all-<split>-<model_name>.parquet`; when `shard_size` is set, each
+  split is written across `-<index>-of-<count>` shards. These files are the input
+  to `cotorra rep-based-score`.
+
+## (3) Scoring
+
+Scoring uses a trained model to produce outcome scores for the tokens of
+interest. Two complementary approaches are provided:
+
+**Generative scoring** (`cotorra generative-score`) Monte Carlo samples future
+trajectories directly from the model. It:
+
+1. Loads the trained model and held-out inference data.
+2. Samples future trajectories for each target token.
+3. Computes MC, SCOPE, and REACH scores per target token.
+
+Note this depends on the
+[quick-sco-re](https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git)
+package.
+
+**Representation-based scoring** (`cotorra rep-based-score`) fits a lightweight
+estimator on extracted features (run `cotorra extract` first). It:
+
+1. Loads the extracted features and label columns.
+2. Fits the chosen estimator on the training split.
+3. Predicts outcome probabilities for the held-out split.
+
+Both are driven by a YAML config (the package ships a default; see
+[`./src/cotorra/config/scoring.yaml`](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/scoring.yaml))
+that specifies:
 
 - **run_name**: Name for the current run, used to label output files.
 - **tokens_of_interest**: List of token-based outcomes of interest. Supports
@@ -253,6 +328,14 @@ Used by `cotorra generative-score` and `cotorra rep-based-score`.
     - **trunc_id**: Token id forced after the time horizon is exceeded.
     - **max_time**: Maximum time horizon in minutes.
     - **batch_size**: Batch size for inference.
+
+### Outputs
+
+- `scores-generative-<model_name>.parquet` — held-out scores from
+  `generative-score`, with a `<TOKEN>_mc_score`, `<TOKEN>_scope_score`, and
+  `<TOKEN>_reach_score` column for each target token.
+- `scores-rep-based-<model_name>.parquet` — held-out scores from
+  `rep-based-score`, with a `<TOKEN>_rep_score` column for each target token.
 
 ## Usage
 
@@ -331,24 +414,28 @@ with commands:
     ╰─────────────────────────────────────────────────────────────────────────────╯
     ```
 
-- `cotorra generative-score`
+- `cotorra train-private`
 
     ```
-    Usage: cotorra generative-score [OPTIONS]
+    Usage: cotorra train-private [OPTIONS]
 
-    Generate SCORE/REACH metrics from a trained model and save them to parquet.
+    Train a model with differential privacy on tokenized data.
 
     ╭─ Options ───────────────────────────────────────────────────────────────────╮
-    │    --scoring-config       -s      PATH  Scoring configuration file          │
-    │                                         (overrides default)                 │
-    │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
-    │ *  --model-home           -m      TEXT  Directory of the trained model to   │
-    │                                         score with                          │
-    │                                         [required]                          │
-    │    --output-home          -o      TEXT  Output directory for scores,        │
-    │                                         defaults to processed-data-home     │
-    │    --verbose              -v            Verbose logging         │
-    │    --help                 -h            Show this message and exit.         │
+    │    --training-config      -t      PATH   Training configuration file        │
+    │                                          (overrides default)                │
+    │ *  --processed-data-home  -p      TEXT   Processed data directory           │
+    │                                          (overrides config)                 │
+    │                                          [required]                         │
+    │ *  --output-home          -o      TEXT   Output directory for trained       │
+    │                                          models                             │
+    │                                          [required]                         │
+    │    --noise-multiplier     -n      FLOAT  Noise multiplier (overrides        │
+    │                                          configuration)                     │
+    │    --max-grad-norm        -m      FLOAT  Max grad norm (overrides           │
+    │                                          configuration)                     │
+    │    --verbose              -v             Verbose logging                    │
+    │    --help                 -h             Show this message and exit.        │
     ╰─────────────────────────────────────────────────────────────────────────────╯
     ```
 
@@ -371,6 +458,27 @@ with commands:
     │                                         processed-data-home                 │
     │    --all-times            -a            Extract features for all time steps │
     │                                         (instead of just the final one)?    │
+    │    --help                 -h            Show this message and exit.         │
+    ╰─────────────────────────────────────────────────────────────────────────────╯
+    ```
+
+- `cotorra generative-score`
+
+    ```
+    Usage: cotorra generative-score [OPTIONS]
+
+    Generate SCORE/REACH metrics from a trained model and save them to parquet.
+
+    ╭─ Options ───────────────────────────────────────────────────────────────────╮
+    │    --scoring-config       -s      PATH  Scoring configuration file          │
+    │                                         (overrides default)                 │
+    │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
+    │ *  --model-home           -m      TEXT  Directory of the trained model to   │
+    │                                         score with                          │
+    │                                         [required]                          │
+    │    --output-home          -o      TEXT  Output directory for scores,        │
+    │                                         defaults to processed-data-home     │
+    │    --verbose              -v            Verbose logging         │
     │    --help                 -h            Show this message and exit.         │
     ╰─────────────────────────────────────────────────────────────────────────────╯
     ```
@@ -405,31 +513,6 @@ with commands:
     │    --verbose             -v                           Verbose logging       │
     │    --help                -h                           Show this message and │
     │                                                       exit.                 │
-    ╰─────────────────────────────────────────────────────────────────────────────╯
-    ```
-
-- `cotorra train-private`
-
-    ```
-    Usage: cotorra train-private [OPTIONS]
-
-    Train a model with differential privacy on tokenized data.
-
-    ╭─ Options ───────────────────────────────────────────────────────────────────╮
-    │    --training-config      -t      PATH   Training configuration file        │
-    │                                          (overrides default)                │
-    │ *  --processed-data-home  -p      TEXT   Processed data directory           │
-    │                                          (overrides config)                 │
-    │                                          [required]                         │
-    │ *  --output-home          -o      TEXT   Output directory for trained       │
-    │                                          models                             │
-    │                                          [required]                         │
-    │    --noise-multiplier     -n      FLOAT  Noise multiplier (overrides        │
-    │                                          configuration)                     │
-    │    --max-grad-norm        -m      FLOAT  Max grad norm (overrides           │
-    │                                          configuration)                     │
-    │    --verbose              -v             Verbose logging                    │
-    │    --help                 -h             Show this message and exit.        │
     ╰─────────────────────────────────────────────────────────────────────────────╯
     ```
 
