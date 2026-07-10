@@ -2,15 +2,15 @@
 
 Scoring turns a trained model into per-timeline outcome predictions. Cotorra
 offers two complementary approaches, both driven by a `scoring.yaml`
-configuration and both operating on the held-out split: generation-based
-scoring, which lets the model simulate the future directly, and
-representation-based scoring, which fits a classifier on extracted features.
-In each case the `target_tokens` glob patterns in the configuration select
-which vocabulary tokens count as outcomes of interest.
+configuration and both operating on the held-out split: generation-based scoring,
+which lets the model simulate the future directly, and representation-based
+scoring, which fits a classifier on extracted features. In each case the
+`target_tokens` glob patterns in the configuration select which vocabulary tokens
+count as outcomes of interest.
 
 ## `GenerativeScorer`
 
-`GenerativeScorer` predicts outcomes by *generating* them. Using the
+`GenerativeScorer` predicts outcomes by _generating_ them. Using the
 [`quick_sco_re`](https://pypi.org/project/quick-sco-re/) implementation of the
 SCORE and REACH algorithms, it autoregressively samples many possible
 continuations of each timeline and estimates the probability that a target
@@ -36,9 +36,9 @@ features are missing, prompting you to run `cotorra extract` first.
 ## `EstimatorType`
 
 `EstimatorType` enumerates the classifier families available to
-[`RepBasedScorer`](#repbasedscorer): k-nearest-neighbors, LightGBM (the
-default), XGBoost, and several logistic-regression variants (plain,
-standardized/z-scored, and cross-validated). It exists so the choice of
-estimator can be passed as a plain string on the CLI or in configuration.
+[`RepBasedScorer`](#repbasedscorer): k-nearest-neighbors, LightGBM (the default),
+XGBoost, and several logistic-regression variants (plain, standardized/z-scored,
+and cross-validated). It exists so the choice of estimator can be passed as a
+plain string on the CLI or in configuration.
 
 ::: cotorra.scorer_rep_based.EstimatorType

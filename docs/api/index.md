@@ -2,17 +2,16 @@
 
 Auto-generated documentation for the public `cotorra` API.
 
-Cotorra trains generative event models on tokenized timelines and turns them
-into predictions. The public API follows the same three-stage pipeline exposed
-by the [CLI](../index.md#usage):
+Cotorra trains generative event models on tokenized timelines and turns them into
+predictions. The public API follows the same three-stage pipeline exposed by the
+[CLI](../index.md#usage):
 
 1. **[Training](training.md)** — fit a causal language model on packed token
    sequences ([`Trainer`](training.md#trainer)), optionally under differential
    privacy ([`TrainerDP`](training.md#trainerdp-differential-privacy)) or with
-   hyperparameter search
-   ([`Tuner`](training.md#tuner)).
-2. **[Extraction](extraction.md)** — run a trained model over held-out
-   timelines and dump its hidden-state representations
+   hyperparameter search ([`Tuner`](training.md#tuner)).
+2. **[Extraction](extraction.md)** — run a trained model over held-out timelines
+   and dump its hidden-state representations
    ([`Extractor`](extraction.md#extractor)).
 3. **[Scoring](scoring.md)** — turn a model into outcome predictions, either by
    autoregressive generation ([`GenerativeScorer`](scoring.md#generativescorer))

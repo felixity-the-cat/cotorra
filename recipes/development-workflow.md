@@ -25,43 +25,43 @@ esac
    https://physionet.org/content/mimic-iv-ext-clif. We first collate and tokenize
    it with the [cocoa package](https://github.com/bbj-lab/cocoa).
 
-   ```sh
-   cocoa pipeline \
-       --processed-data-home ./processed/dev \
-       --verbose
-   ```
+    ```sh
+    cocoa pipeline \
+        --processed-data-home ./processed/dev \
+        --verbose
+    ```
 
 2. Next we train a model on this data (with hyperparameter tuning):
 
-   ```sh
-   cotorra tune \
-       --processed-data-home ./processed/dev \
-       --output-home ./output/dev/ \
-       --verbose
-   ```
+    ```sh
+    cotorra tune \
+        --processed-data-home ./processed/dev \
+        --output-home ./output/dev/ \
+        --verbose
+    ```
 
 3. You can get generative predictions with:
 
-   ```sh
-   cotorra generative-score \
-       --processed-data-home ./processed/dev \
-       --model-home ./output/dev/mdl-cotorra-tuning \
-       --verbose
-   ```
+    ```sh
+    cotorra generative-score \
+        --processed-data-home ./processed/dev \
+        --model-home ./output/dev/mdl-cotorra-tuning \
+        --verbose
+    ```
 
 4. You can get representations of the initial parts of the sequences and
    rep-based predictions with:
 
-   ```sh
-   cotorra extract \
-       --processed-data-home ./processed/dev \
-       --model-home ./output/dev/mdl-cotorra-tuning
+    ```sh
+    cotorra extract \
+        --processed-data-home ./processed/dev \
+        --model-home ./output/dev/mdl-cotorra-tuning
 
-   cotorra rep-based-score \
-       --processed-data-home ./processed/dev \
-       --model-home ./output/dev/mdl-cotorra-tuning \
-       --verbose
-   ```
+    cotorra rep-based-score \
+        --processed-data-home ./processed/dev \
+        --model-home ./output/dev/mdl-cotorra-tuning \
+        --verbose
+    ```
 
 <!-- prettier-ignore-start -->
 > [!TIP]

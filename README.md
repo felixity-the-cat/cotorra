@@ -142,14 +142,14 @@ YAML config via OmegaConf.
 Used by `cotorra train` and `cotorra tune`.
 
 - **model**:
-  - **model_name**: Name or path of the HuggingFace model (e.g.,
-    `meta-llama/Llama-3.2-1B`).
-  - **model_args**: Model architecture parameters passed directly to
-    HuggingFace's
-    [`AutoConfig`](https://huggingface.co/docs/transformers/en/model_doc/auto).
+    - **model_name**: Name or path of the HuggingFace model (e.g.,
+      `meta-llama/Llama-3.2-1B`).
+    - **model_args**: Model architecture parameters passed directly to
+      HuggingFace's
+      [`AutoConfig`](https://huggingface.co/docs/transformers/en/model_doc/auto).
 
-  _Note: The bundled config defines reusable model presets under
-  `model_presets`._
+    _Note: The bundled config defines reusable model presets under
+    `model_presets`._
 
 - **max_seq_len**: Maximum sequence length for model input.
 - **n_epochs**: Number of epochs (handled in the dataloader, not the trainer).
@@ -158,22 +158,22 @@ Used by `cotorra train` and `cotorra tune`.
 - **tokens_of_interest**: List of special tokens to upweight during training
   (referenced by loss config). Supports patterns specified with fnmatch.
 - **wandb**:
-  - **project**: Weights & Biases project name for experiment tracking.
-  - **run_name**: Name for the current run.
+    - **project**: Weights & Biases project name for experiment tracking.
+    - **run_name**: Name for the current run.
 - **custom_loss**: Boolean flag to enable custom loss functions (default:
   `false`).
 - **quantile_token_loss** _(optional)_: Upweights loss on quantile boundary
   tokens.
-  - **qt_weight**: Weight multiplier for quantile tokens.
+    - **qt_weight**: Weight multiplier for quantile tokens.
 - **label_weighted_loss** _(optional)_: Upweights loss on specific tokens of
   clinical interest.
-  - **tokens_of_interest**: List of token labels to upweight. Supports patterns
-    specified with fnmatch.
-  - **toi_weight**: Weight multiplier applied to those tokens.
+    - **tokens_of_interest**: List of token labels to upweight. Supports patterns
+      specified with fnmatch.
+    - **toi_weight**: Weight multiplier applied to those tokens.
 - **time_based_rope** _(optional)_: Enables time-aware rotary position
   embeddings.
-  - **sec_per_pos_id**: Number of seconds represented by one position id
-    increment.
+    - **sec_per_pos_id**: Number of seconds represented by one position id
+      increment.
 - **training_args**: Arguments passed to HuggingFace's
   [`TrainingArguments`](https://huggingface.co/docs/transformers/en/main_classes/trainer#transformers.TrainingArguments).
 - **tuning_args**: Arguments passed to HuggingFace's
@@ -226,13 +226,13 @@ Used by `cotorra extract`.
 - **max_seq_len**: Maximum sequence length.
 - **time_based_rope** _(optional)_: Enables time-aware position ids during
   extraction (must match the setting used at training time).
-  - **sec_per_pos_id**: Number of seconds represented by one position id
-    increment.
+    - **sec_per_pos_id**: Number of seconds represented by one position id
+      increment.
 - **extract**:
-  - **max_len**: Maximum input length (tokens) during extraction.
-  - **batch_size**: Batch size for inference.
-  - **shard_size** _(optional)_: Number of samples per output parquet shard. Omit
-    to write a single file per split.
+    - **max_len**: Maximum input length (tokens) during extraction.
+    - **batch_size**: Batch size for inference.
+    - **shard_size** _(optional)_: Number of samples per output parquet shard.
+      Omit to write a single file per split.
 
 ### Scoring configuration ([example](https://github.com/burkh4rt/cotorra/blob/master/src/cotorra/config/scoring.yaml))
 
@@ -242,17 +242,17 @@ Used by `cotorra generative-score` and `cotorra rep-based-score`.
 - **tokens_of_interest**: List of token-based outcomes of interest. Supports
   patterns specified with fnmatch. (Referenced by target tokens.)
 - **score**:
-  - **max_len**: Maximum input length (tokens) during scoring.
-  - **n_samp**: Number of Monte Carlo samples per input per trajectory type.
-  - **target_tokens**: Token-based outcomes of interest to score. Supports
-    patterns specified with fnmatch.
-  - **end_tokens**: Tokens that naturally terminate a generated sequence (e.g.
-    `EOS`).
-  - **suppressed_tokens**: Tokens to suppress via logit bias during generation
-    (e.g. `PAD`).
-  - **trunc_id**: Token id forced after the time horizon is exceeded.
-  - **max_time**: Maximum time horizon in minutes.
-  - **batch_size**: Batch size for inference.
+    - **max_len**: Maximum input length (tokens) during scoring.
+    - **n_samp**: Number of Monte Carlo samples per input per trajectory type.
+    - **target_tokens**: Token-based outcomes of interest to score. Supports
+      patterns specified with fnmatch.
+    - **end_tokens**: Tokens that naturally terminate a generated sequence (e.g.
+      `EOS`).
+    - **suppressed_tokens**: Tokens to suppress via logit bias during generation
+      (e.g. `PAD`).
+    - **trunc_id**: Token id forced after the time horizon is exceeded.
+    - **max_time**: Maximum time horizon in minutes.
+    - **batch_size**: Batch size for inference.
 
 ## Usage
 
@@ -289,149 +289,149 @@ with commands:
 
 - `cotorra train`
 
-  ```
-  Usage: cotorra train [OPTIONS]
+    ```
+    Usage: cotorra train [OPTIONS]
 
-  Train a model on tokenized data. For tokenization, consult the cocoa package.
+    Train a model on tokenized data. For tokenization, consult the cocoa package.
 
-  ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --training-config         -t      PATH  Training configuration file      │
-  │                                            (overrides default)              │
-  │ *  --processed-data-home     -p      TEXT  Processed data directory         │
-  │                                            (overrides config)               │
-  │                                            [required]                       │
-  │ *  --output-home             -o      TEXT  Output directory for trained     │
-  │                                            models                           │
-  │                                            [required]                       │
-  │    --resume-from-checkpoint  -r            Try to resume training from the  │
-  │                                            latest checkpoint in             │
-  │                                            --output-home.                   │
-  │    --verbose                 -v            Verbose logging                  │
-  │    --help                    -h            Show this message and exit.      │
-  ╰─────────────────────────────────────────────────────────────────────────────╯
-  ```
+    ╭─ Options ───────────────────────────────────────────────────────────────────╮
+    │    --training-config         -t      PATH  Training configuration file      │
+    │                                            (overrides default)              │
+    │ *  --processed-data-home     -p      TEXT  Processed data directory         │
+    │                                            (overrides config)               │
+    │                                            [required]                       │
+    │ *  --output-home             -o      TEXT  Output directory for trained     │
+    │                                            models                           │
+    │                                            [required]                       │
+    │    --resume-from-checkpoint  -r            Try to resume training from the  │
+    │                                            latest checkpoint in             │
+    │                                            --output-home.                   │
+    │    --verbose                 -v            Verbose logging                  │
+    │    --help                    -h            Show this message and exit.      │
+    ╰─────────────────────────────────────────────────────────────────────────────╯
+    ```
 
 - `cotorra tune`
 
-  ```
-  Usage: cotorra tune [OPTIONS]
+    ```
+    Usage: cotorra tune [OPTIONS]
 
-  Run hyperparameter tuning while training a model.
+    Run hyperparameter tuning while training a model.
 
-  ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --training-config      -t      PATH  Training configuration file         │
-  │                                         (overrides default)                 │
-  │ *  --processed-data-home  -p      TEXT  Processed data directory (overrides │
-  │                                         config)                             │
-  │                                         [required]                          │
-  │ *  --output-home          -o      TEXT  Output directory for trained models │
-  │                                         [required]                          │
-  │    --verbose              -v            Verbose logging         │
-  │    --help                 -h            Show this message and exit.         │
-  ╰─────────────────────────────────────────────────────────────────────────────╯
-  ```
+    ╭─ Options ───────────────────────────────────────────────────────────────────╮
+    │    --training-config      -t      PATH  Training configuration file         │
+    │                                         (overrides default)                 │
+    │ *  --processed-data-home  -p      TEXT  Processed data directory (overrides │
+    │                                         config)                             │
+    │                                         [required]                          │
+    │ *  --output-home          -o      TEXT  Output directory for trained models │
+    │                                         [required]                          │
+    │    --verbose              -v            Verbose logging         │
+    │    --help                 -h            Show this message and exit.         │
+    ╰─────────────────────────────────────────────────────────────────────────────╯
+    ```
 
 - `cotorra generative-score`
 
-  ```
-  Usage: cotorra generative-score [OPTIONS]
+    ```
+    Usage: cotorra generative-score [OPTIONS]
 
-  Generate SCORE/REACH metrics from a trained model and save them to parquet.
+    Generate SCORE/REACH metrics from a trained model and save them to parquet.
 
-  ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --scoring-config       -s      PATH  Scoring configuration file          │
-  │                                         (overrides default)                 │
-  │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
-  │ *  --model-home           -m      TEXT  Directory of the trained model to   │
-  │                                         score with                          │
-  │                                         [required]                          │
-  │    --output-home          -o      TEXT  Output directory for scores,        │
-  │                                         defaults to processed-data-home     │
-  │    --verbose              -v            Verbose logging         │
-  │    --help                 -h            Show this message and exit.         │
-  ╰─────────────────────────────────────────────────────────────────────────────╯
-  ```
+    ╭─ Options ───────────────────────────────────────────────────────────────────╮
+    │    --scoring-config       -s      PATH  Scoring configuration file          │
+    │                                         (overrides default)                 │
+    │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
+    │ *  --model-home           -m      TEXT  Directory of the trained model to   │
+    │                                         score with                          │
+    │                                         [required]                          │
+    │    --output-home          -o      TEXT  Output directory for scores,        │
+    │                                         defaults to processed-data-home     │
+    │    --verbose              -v            Verbose logging         │
+    │    --help                 -h            Show this message and exit.         │
+    ╰─────────────────────────────────────────────────────────────────────────────╯
+    ```
 
 - `cotorra extract`
 
-  ```
-  Usage: cotorra extract [OPTIONS]
+    ```
+    Usage: cotorra extract [OPTIONS]
 
-  Extract representations from a trained model.
+    Extract representations from a trained model.
 
-  ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --extraction-config    -e      PATH  Extraction configuration file       │
-  │                                         (overrides default)                 │
-  │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
-  │ *  --model-home           -m      TEXT  Directory of the trained model to   │
-  │                                         extract from                        │
-  │                                         [required]                          │
-  │    --output-home          -o      TEXT  Output directory for extracted      │
-  │                                         features, defaults to               │
-  │                                         processed-data-home                 │
-  │    --all-times            -a            Extract features for all time steps │
-  │                                         (instead of just the final one)?    │
-  │    --help                 -h            Show this message and exit.         │
-  ╰─────────────────────────────────────────────────────────────────────────────╯
-  ```
+    ╭─ Options ───────────────────────────────────────────────────────────────────╮
+    │    --extraction-config    -e      PATH  Extraction configuration file       │
+    │                                         (overrides default)                 │
+    │ *  --processed-data-home  -p      TEXT  Processed data directory [required] │
+    │ *  --model-home           -m      TEXT  Directory of the trained model to   │
+    │                                         extract from                        │
+    │                                         [required]                          │
+    │    --output-home          -o      TEXT  Output directory for extracted      │
+    │                                         features, defaults to               │
+    │                                         processed-data-home                 │
+    │    --all-times            -a            Extract features for all time steps │
+    │                                         (instead of just the final one)?    │
+    │    --help                 -h            Show this message and exit.         │
+    ╰─────────────────────────────────────────────────────────────────────────────╯
+    ```
 
 - `cotorra rep-based-score` (note: you need to run `extract` first)
 
-  ```
-  Usage: cotorra rep-based-score [OPTIONS]
+    ```
+    Usage: cotorra rep-based-score [OPTIONS]
 
-  Generate rep-based scores for the token-based outcomes of interest. Note:
-  this requires that features have already been extracted and saved
+    Generate rep-based scores for the token-based outcomes of interest. Note:
+    this requires that features have already been extracted and saved
 
-  ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --scoring-config      -s      PATH                 Scoring configuration │
-  │                                                       file (overrides       │
-  │                                                       default)              │
-  │ *  --processed-data-ho…  -p      TEXT                 Processed data        │
-  │                                                       directory             │
-  │                                                       [required]            │
-  │ *  --model-home          -m      TEXT                 Directory of the      │
-  │                                                       trained model to      │
-  │                                                       score with            │
-  │                                                       [required]            │
-  │    --output-home         -o      TEXT                 Output directory for  │
-  │                                                       scores, defaults to   │
-  │                                                       processed-data-home   │
-  │                                                       [default: None]       │
-  │    --estimator           -e      [k-NN|lightGBM|logi  Estimator to use for  │
-  │                                  stic|logistic-z|log  rep-based scoring     │
-  │                                  istic-CV|logistic-C  [default: lightGBM]   │
-  │                                  V-z|XGBoost]                               │
-  │    --verbose             -v                           Verbose logging       │
-  │    --help                -h                           Show this message and │
-  │                                                       exit.                 │
-  ╰─────────────────────────────────────────────────────────────────────────────╯
-  ```
+    ╭─ Options ───────────────────────────────────────────────────────────────────╮
+    │    --scoring-config      -s      PATH                 Scoring configuration │
+    │                                                       file (overrides       │
+    │                                                       default)              │
+    │ *  --processed-data-ho…  -p      TEXT                 Processed data        │
+    │                                                       directory             │
+    │                                                       [required]            │
+    │ *  --model-home          -m      TEXT                 Directory of the      │
+    │                                                       trained model to      │
+    │                                                       score with            │
+    │                                                       [required]            │
+    │    --output-home         -o      TEXT                 Output directory for  │
+    │                                                       scores, defaults to   │
+    │                                                       processed-data-home   │
+    │                                                       [default: None]       │
+    │    --estimator           -e      [k-NN|lightGBM|logi  Estimator to use for  │
+    │                                  stic|logistic-z|log  rep-based scoring     │
+    │                                  istic-CV|logistic-C  [default: lightGBM]   │
+    │                                  V-z|XGBoost]                               │
+    │    --verbose             -v                           Verbose logging       │
+    │    --help                -h                           Show this message and │
+    │                                                       exit.                 │
+    ╰─────────────────────────────────────────────────────────────────────────────╯
+    ```
 
 - `cotorra train-private`
 
-  ```
-  Usage: cotorra train-private [OPTIONS]
+    ```
+    Usage: cotorra train-private [OPTIONS]
 
-  Train a model with differential privacy on tokenized data.
+    Train a model with differential privacy on tokenized data.
 
-  ╭─ Options ───────────────────────────────────────────────────────────────────╮
-  │    --training-config      -t      PATH   Training configuration file        │
-  │                                          (overrides default)                │
-  │ *  --processed-data-home  -p      TEXT   Processed data directory           │
-  │                                          (overrides config)                 │
-  │                                          [required]                         │
-  │ *  --output-home          -o      TEXT   Output directory for trained       │
-  │                                          models                             │
-  │                                          [required]                         │
-  │    --noise-multiplier     -n      FLOAT  Noise multiplier (overrides        │
-  │                                          configuration)                     │
-  │    --max-grad-norm        -m      FLOAT  Max grad norm (overrides           │
-  │                                          configuration)                     │
-  │    --verbose              -v             Verbose logging                    │
-  │    --help                 -h             Show this message and exit.        │
-  ╰─────────────────────────────────────────────────────────────────────────────╯
-  ```
+    ╭─ Options ───────────────────────────────────────────────────────────────────╮
+    │    --training-config      -t      PATH   Training configuration file        │
+    │                                          (overrides default)                │
+    │ *  --processed-data-home  -p      TEXT   Processed data directory           │
+    │                                          (overrides config)                 │
+    │                                          [required]                         │
+    │ *  --output-home          -o      TEXT   Output directory for trained       │
+    │                                          models                             │
+    │                                          [required]                         │
+    │    --noise-multiplier     -n      FLOAT  Noise multiplier (overrides        │
+    │                                          configuration)                     │
+    │    --max-grad-norm        -m      FLOAT  Max grad norm (overrides           │
+    │                                          configuration)                     │
+    │    --verbose              -v             Verbose logging                    │
+    │    --help                 -h             Show this message and exit.        │
+    ╰─────────────────────────────────────────────────────────────────────────────╯
+    ```
 
 [^1]:
     L. Gersony, "The Quiet Victory of Chicago’s Monk Parakeets," _The Chicago
