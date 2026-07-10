@@ -536,4 +536,10 @@ python3 -m pip install --upgrade twine
 python3 -m twine upload --repository pypi dist/*
 ```
 
+Make docs:
+```
+mkdocs build
+mkdocs serve --dev-addr 127.0.0.1:8001
+```
+
 -->
