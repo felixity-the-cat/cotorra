@@ -6,6 +6,7 @@ repo_name: bbj-lab/cotorra
 
 theme:
   name: material
+  custom_dir: overrides
   logo: svg/emoji_u1f99c.svg
   favicon: svg/emoji_u1f99c.svg
   font: false
@@ -16,7 +17,9 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
+    - navigation.tabs
     - navigation.top
+    - navigation.footer
     - content.code.copy
     - content.code.annotate
     - toc.follow
@@ -25,7 +28,12 @@ theme:
 
 markdown_extensions:
   - admonition
+  - attr_list
+  - md_in_html
   - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.superfences
@@ -44,6 +52,9 @@ validation:
 plugins:
   - search
   - include-markdown
+  - callouts
+  - git-revision-date-localized:
+      fallback_to_build_date: true
   - mkdocstrings:
       handlers:
         python:

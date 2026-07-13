@@ -34,6 +34,8 @@ the next token in a subject's timeline given their history up to that point, and
 then uses the trained model to extract representations and score outcomes of
 interest. It does all of this in a configurable way.
 
+<!-- cards-anchor -->
+
 ## Installation
 
 Install the latest release from PyPI:
@@ -409,7 +411,7 @@ with commands:
     │                                         [required]                          │
     │ *  --output-home          -o      TEXT  Output directory for trained models │
     │                                         [required]                          │
-    │    --verbose              -v            Verbose logging         │
+    │    --verbose              -v            Verbose logging                     │
     │    --help                 -h            Show this message and exit.         │
     ╰─────────────────────────────────────────────────────────────────────────────╯
     ```
@@ -478,7 +480,7 @@ with commands:
     │                                         [required]                          │
     │    --output-home          -o      TEXT  Output directory for scores,        │
     │                                         defaults to processed-data-home     │
-    │    --verbose              -v            Verbose logging         │
+    │    --verbose              -v            Verbose logging                     │
     │    --help                 -h            Show this message and exit.         │
     ╰─────────────────────────────────────────────────────────────────────────────╯
     ```
@@ -622,7 +624,12 @@ python3 -m twine upload --repository pypi dist/*
 Make docs:
 ```
 mkdocs build
-mkdocs serve --dev-addr 127.0.0.1:8001
+mkdocs serve --dev-addr 127.0.0.1:8002
+```
+
+Make tag:
+```
+git tag -s v26.6.1 -m "docs may be read"
 ```
 
 -->

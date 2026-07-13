@@ -1,8 +1,8 @@
 [project]
     authors = [
         { name = "Michael C. Burkhart", email = "burkh4rt@uchicago.edu" },
-        { name = "Luke Solo", email = "lsolo@uchicago.edu" },
         { name = "Inhyeok Lee", email = "ihlee@uchicago.edu" },
+        { name = "Luke Solo", email = "lsolo@uchicago.edu" },
         { name = "S'Khaja Charles", email = "skhaja@uchicago.edu" },
         { name = "Brett K. Beaulieu-Jones", email = "beaulieujones@uchicago.edu" },
     ]
@@ -14,6 +14,7 @@
     ]
     dependencies = [
         "accelerate",
+        "cocoa-tokenizer",
         "datasets",
         "huggingface-hub",
         "lightgbm",
@@ -62,11 +63,13 @@
             "mkdocs-material",
             "mkdocstrings[python]",
             "mkdocs-include-markdown-plugin",
+            "mkdocs-callouts",
+            "mkdocs-git-revision-date-localized-plugin",
         ]
-        # gen = [
-        #     "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
-        #     "sglang",
-        # ]
+        gen = [
+            "quick-sco-re @ git+https://github.com/lukesolo-ml/SCOPE_REACH_optimized_inference.git",
+            "sglang",
+        ]
 
 [build-system]
     build-backend = "setuptools.build_meta"
